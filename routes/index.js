@@ -10,4 +10,11 @@ router.get('/temp', function(req, res, next) {
   res.render('index', { title: 'temp-io' });
 });
 
+router.get('/user', function(req, res, next) {
+  res.render('index', { title: 'temp-io' });
+});
+
+router.get('/user/temps', function(req, res, next) {
+  res.render('index', { title: 'temp-io' });
+});
 module.exports = router;
