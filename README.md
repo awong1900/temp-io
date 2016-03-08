@@ -29,3 +29,42 @@ nodejs web app for temp display with wio link
 
 ## 访问路径
 - /login?  登入
+
+## 第三方授权登入
+拿到授权后的token，在用token拿到用户ID后，然后去API服务器验证用户是否存在。
+
+## 数据格式
+user:
+{
+  "login":  "awong1900",
+  "id": 4022612,
+  "facebook_id": 1221,
+  "weixin_id": null,
+  "token": "facebook oauth2 token",
+  "avatar_url": "https://avatars.githubusercontent.com/u/4022612?v=3",
+  "temperatures_url": "https://api.temp.io/users/awong1900/temperatures",
+  "created_at": "2013-04-01T01:28:05Z",
+  "updated_at": "2016-03-07T12:35:08Z",
+}
+
+temperature:
+{
+  "id": 53286538,
+  "name": "home",
+  "full_name": "awong1900/home",
+  "owner": {
+    "login":  "awong1900",
+    "id": 4022612,
+    "facebook_id": 1221,
+    "weixin_id": null,
+    "token": "facebook oauth2 token",
+    "avatar_url": "https://avatars.githubusercontent.com/u/4022612?v=3",
+    "temperatures_url": "https://api.temp.io/users/awong1900/temperatures",
+  },
+  "private": false,
+  "html_url": "https://github.com/awong1900/home",
+  "description": null,
+  "url": "https://api.github.com/repos/awong1900/home",
+  "created_at": "2016-03-07T01:30:30Z",
+  "updated_at": "2016-03-07T01:30:30Z",
+}
