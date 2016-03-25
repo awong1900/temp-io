@@ -7,6 +7,7 @@ nodejs web app for temp display with wio link
 - 支持第三方登入
 
 ## 资源API
+API 前缀 /api/v1
 ### Github RESTFul API Style
 - GET /users/:username 获得其他人的用户资料
 - GET /user 用户信息，加token
@@ -33,7 +34,7 @@ nodejs web app for temp display with wio link
 ## 第三方授权登入
 拿到授权后的token，在用token拿到用户ID后，然后去API服务器验证用户是否存在。
 
-## 数据格式
+## 返回json设计
 user:
 {
   "login":  "awong1900",
@@ -67,4 +68,25 @@ temperature:
   "url": "https://api.github.com/repos/awong1900/home",
   "created_at": "2016-03-07T01:30:30Z",
   "updated_at": "2016-03-07T01:30:30Z",
+}
+
+## MongoDB Model设计
+### collection('users')
+mongoDB 推荐嵌入存储数据。（嵌入数据较少情况下）。
+{
+  "_ id": "double",
+  "facebook_id": "string",
+  "weixin_id": "string",
+  "name": "string",
+  "created_at": "data",
+  "updated_at": "date",
+  "temps": [
+    {
+      "id": "double",
+      "name": "string",
+      "api": "string"
+      "created_at": "data",
+      "updated_at": "date",
+    }
+  ]
 }
