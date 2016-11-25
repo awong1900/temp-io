@@ -3,7 +3,7 @@ swagger: '2.0'
 info:
   version: 0.0.1
   description: |
-    一个快速查看窗外温度的装置。
+    一个基于Seeed Wio Iot平台开发的快速查看窗外温度的装置。
   title: Temp-io API
 host: temp.io
 basePath: /api/v1
