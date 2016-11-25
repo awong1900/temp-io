@@ -8,6 +8,28 @@
     "host": "temp.io",
     "basePath": "/api/v1",
     "paths": {
+        "/user": {
+            "get": {
+                "security": [
+                    {
+                        "Authorization": []
+                    },
+                    {
+                        "access_token": []
+                    }
+                ],
+                "summary": "获得当前用户信息",
+                "description": "",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/user"
+                        }
+                    }
+                }
+            }
+        },
         "/user/{uid}": {
             "parameters": [
                 {
@@ -15,6 +37,14 @@
                 }
             ],
             "get": {
+                "security": [
+                    {
+                        "Authorization": []
+                    },
+                    {
+                        "access_token": []
+                    }
+                ],
                 "summary": "获得用户信息",
                 "description": "",
                 "responses": {
@@ -34,6 +64,14 @@
                 }
             ],
             "get": {
+                "security": [
+                    {
+                        "Authorization": []
+                    },
+                    {
+                        "access_token": []
+                    }
+                ],
                 "summary": "获得用户所有的温度",
                 "description": "",
                 "responses": {
@@ -43,6 +81,14 @@
                 }
             },
             "post": {
+                "security": [
+                    {
+                        "Authorization": []
+                    },
+                    {
+                        "access_token": []
+                    }
+                ],
                 "summary": "创建一个温度",
                 "description": "",
                 "responses": {
@@ -62,6 +108,14 @@
                 }
             ],
             "get": {
+                "security": [
+                    {
+                        "Authorization": []
+                    },
+                    {
+                        "access_token": []
+                    }
+                ],
                 "summary": "获得指定的温度",
                 "description": "",
                 "responses": {
@@ -71,6 +125,14 @@
                 }
             },
             "patch": {
+                "security": [
+                    {
+                        "Authorization": []
+                    },
+                    {
+                        "access_token": []
+                    }
+                ],
                 "summary": "更新指定的温度",
                 "description": "",
                 "responses": {
@@ -80,6 +142,14 @@
                 }
             },
             "delete": {
+                "security": [
+                    {
+                        "Authorization": []
+                    },
+                    {
+                        "access_token": []
+                    }
+                ],
                 "summary": "删除指定的温度",
                 "description": "",
                 "responses": {
@@ -91,6 +161,14 @@
         },
         "/temps": {
             "get": {
+                "security": [
+                    {
+                        "Authorization": []
+                    },
+                    {
+                        "access_token": []
+                    }
+                ],
                 "summary": "获得所有的公开温度",
                 "description": "",
                 "responses": {
@@ -99,6 +177,20 @@
                     }
                 }
             }
+        }
+    },
+    "securityDefinitions": {
+        "Authorization": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header",
+            "description": "认证信息，通过Authorizatin头的方式添加token。以`token`开头空格后加上token,如`token your_token`\n"
+        },
+        "access_token": {
+            "type": "apiKey",
+            "name": "access_token",
+            "in": "query",
+            "description": "认证信息，通过query参数access_token方式添加token。\n"
         }
     },
     "parameters": {
