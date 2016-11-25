@@ -8,10 +8,25 @@ info:
 host: temp.io
 basePath: /api/v1
 paths:
+  /user:
+    get:
+      security:
+        - Authorization: []
+        - access_token: []
+      summary: 获得当前用户信息
+      description: ""
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/user'
   /user/{uid}:
     parameters:
       - $ref: '#/parameters/uid'
     get:
+      security:
+        - Authorization: []
+        - access_token: []
       summary: 获得用户信息
       description: ""
       responses:
@@ -23,12 +38,18 @@ paths:
     parameters:
       - $ref: '#/parameters/uid'
     get:
+      security:
+        - Authorization: []
+        - access_token: []
       summary: 获得用户所有的温度
       description: ""
       responses:
         200:
           description: OK
     post:
+      security:
+        - Authorization: []
+        - access_token: []
       summary: 创建一个温度
       description: ""
       responses:
@@ -39,18 +60,27 @@ paths:
       - $ref: '#/parameters/uid'
       - $ref: '#/parameters/tid'
     get:
+      security:
+        - Authorization: []
+        - access_token: []
       summary: 获得指定的温度
       description: ""
       responses:
         200:
           description: OK
     patch:
+      security:
+        - Authorization: []
+        - access_token: []
       summary: 更新指定的温度
       description: ""
       responses:
         200:
           description: OK
     delete:
+      security:
+        - Authorization: []
+        - access_token: []
       summary: 删除指定的温度
       description: ""
       responses:
@@ -58,11 +88,27 @@ paths:
           description: OK
   /temps:
     get:
+      security:
+        - Authorization: []
+        - access_token: []
       summary: 获得所有的公开温度
       description: ""
       responses:
         200:
           description: OK
+securityDefinitions:
+  Authorization:
+    type: apiKey
+    name: Authorization
+    in: header
+    description: |
+      认证信息，通过Authorizatin头的方式添加token。以`token`开头空格后加上token,如`token your_token`
+  access_token:
+    type: apiKey
+    name: access_token
+    in: query
+    description: |
+      认证信息，通过query参数access_token方式添加token。
 parameters:
   uid:
     name: uid
