@@ -7,9 +7,14 @@ info:
   title: Temp-io API
 host: temp.io
 basePath: /api/v1
+tags:
+  - name: user
+  - name: temp
 paths:
   /user:
     get:
+      tags:
+        - user
       security:
         - Authorization: []
         - access_token: []
@@ -24,6 +29,8 @@ paths:
     parameters:
       - $ref: '#/parameters/uid'
     get:
+      tags:
+        - user
       security:
         - Authorization: []
         - access_token: []
@@ -38,6 +45,8 @@ paths:
     parameters:
       - $ref: '#/parameters/uid'
     get:
+      tags:
+        - temp
       security:
         - Authorization: []
         - access_token: []
@@ -54,6 +63,8 @@ paths:
                 items:
                   $ref: '#/definitions/temp'
     post:
+      tags:
+        - temp
       security:
         - Authorization: []
         - access_token: []
@@ -69,6 +80,8 @@ paths:
       - $ref: '#/parameters/uid'
       - $ref: '#/parameters/tid'
     get:
+      tags:
+        - temp
       security:
         - Authorization: []
         - access_token: []
@@ -80,6 +93,8 @@ paths:
           schema:
             $ref: '#/definitions/temp'
     patch:
+      tags:
+        - temp
       security:
         - Authorization: []
         - access_token: []
@@ -91,6 +106,8 @@ paths:
           schema:
             $ref: '#/definitions/temp'
     delete:
+      tags:
+        - temp
       security:
         - Authorization: []
         - access_token: []
@@ -101,6 +118,8 @@ paths:
           description: No Content
   /temps:
     get:
+      tags:
+        - temp
       security:
         - Authorization: []
         - access_token: []

@@ -7,9 +7,20 @@
     },
     "host": "temp.io",
     "basePath": "/api/v1",
+    "tags": [
+        {
+            "name": "user"
+        },
+        {
+            "name": "temp"
+        }
+    ],
     "paths": {
         "/user": {
             "get": {
+                "tags": [
+                    "user"
+                ],
                 "security": [
                     {
                         "Authorization": []
@@ -37,6 +48,9 @@
                 }
             ],
             "get": {
+                "tags": [
+                    "user"
+                ],
                 "security": [
                     {
                         "Authorization": []
@@ -64,6 +78,9 @@
                 }
             ],
             "get": {
+                "tags": [
+                    "temp"
+                ],
                 "security": [
                     {
                         "Authorization": []
@@ -92,6 +109,9 @@
                 }
             },
             "post": {
+                "tags": [
+                    "temp"
+                ],
                 "security": [
                     {
                         "Authorization": []
@@ -122,6 +142,9 @@
                 }
             ],
             "get": {
+                "tags": [
+                    "temp"
+                ],
                 "security": [
                     {
                         "Authorization": []
@@ -142,6 +165,9 @@
                 }
             },
             "patch": {
+                "tags": [
+                    "temp"
+                ],
                 "security": [
                     {
                         "Authorization": []
@@ -162,6 +188,9 @@
                 }
             },
             "delete": {
+                "tags": [
+                    "temp"
+                ],
                 "security": [
                     {
                         "Authorization": []
@@ -181,6 +210,9 @@
         },
         "/temps": {
             "get": {
+                "tags": [
+                    "temp"
+                ],
                 "security": [
                     {
                         "Authorization": []
