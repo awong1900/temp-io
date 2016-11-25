@@ -21,7 +21,7 @@ API 前缀 /api/v1
 
 ### APIGEE Style
 - GET /users/:username 获得用户资料，（加token获得私有信息）
-- GET /users/:username/temperatures 创建一个温度，（加token获得私有信息）
+- GET /users/:username/temperatures 列出所有温度，（加token获得私有信息）
 - POST /users/:username/temperatures 创建一个温度，必须加token
 - GET /users/:username/temperatures/:id 获得任意用户温度
 - PATCH /users/:username/temperatures/:id 修改温度，加token
@@ -57,6 +57,7 @@ API 前缀 /api/v1
 }
 
 - temperature:
+```
 {
   "id": 53286538,
   "name": "home",
@@ -77,10 +78,11 @@ API 前缀 /api/v1
   "created_at": "2016-03-07T01:30:30Z",
   "updated_at": "2016-03-07T01:30:30Z",
 }
-
+```
 ## MongoDB Model设计
 ### collection('users')
 mongoDB 推荐嵌入存储数据。（嵌入数据较少情况下）。
+```
 {
   "_id": "ObjectID",
   "id": "double"
@@ -103,3 +105,4 @@ mongoDB 推荐嵌入存储数据。（嵌入数据较少情况下）。
     }
   ]
 }
+```

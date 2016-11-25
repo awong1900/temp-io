@@ -1,0 +1,84 @@
+---
+swagger: '2.0'
+info:
+  version: 0.0.1
+  description: |
+    一个快速查看窗外温度的装置。
+  title: Temp-io API
+host: temp.io
+basePath: /api/v1
+paths:
+  /user/{uid}:
+    parameters:
+      - $ref: '#/parameters/uid'
+    get:
+      summary: 获得用户信息
+      description: ""
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/user'
+  /users/{uid}/temps:
+    parameters:
+      - $ref: '#/parameters/uid'
+    get:
+      summary: 获得用户所有的温度
+      description: ""
+      responses:
+        200:
+          description: OK
+    post:
+      summary: 创建一个温度
+      description: ""
+      responses:
+        200:
+          description: OK
+  /users/{uid}/temps/{tid}:
+    parameters:
+      - $ref: '#/parameters/uid'
+      - $ref: '#/parameters/tid'
+    get:
+      summary: 获得指定的温度
+      description: ""
+      responses:
+        200:
+          description: OK
+    patch:
+      summary: 更新指定的温度
+      description: ""
+      responses:
+        200:
+          description: OK
+    delete:
+      summary: 删除指定的温度
+      description: ""
+      responses:
+        200:
+          description: OK
+  /temps:
+    get:
+      summary: 获得所有的公开温度
+      description: ""
+      responses:
+        200:
+          description: OK
+parameters:
+  uid:
+    name: uid
+    in: path
+    description: 用户ID
+    required: true
+    type: integer
+  tid:
+    name: tid
+    in: path
+    description: 温度ID
+    required: true
+    type: integer
+definitions:
+  user:  # TODO(ten): fill it
+    type: object
+    properties:
+      id:
+        type: integer
