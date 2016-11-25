@@ -46,6 +46,13 @@ paths:
       responses:
         200:
           description: OK
+          schema:
+            type: object
+            properties:
+              temps:
+                type: array
+                items:
+                  $ref: '#/definitions/temp'
     post:
       security:
         - Authorization: []
@@ -55,6 +62,8 @@ paths:
       responses:
         200:
           description: OK
+          schema:
+            $ref: '#/definitions/temp'
   /users/{uid}/temps/{tid}:
     parameters:
       - $ref: '#/parameters/uid'
@@ -68,6 +77,8 @@ paths:
       responses:
         200:
           description: OK
+          schema:
+            $ref: '#/definitions/temp'
     patch:
       security:
         - Authorization: []
@@ -77,6 +88,8 @@ paths:
       responses:
         200:
           description: OK
+          schema:
+            $ref: '#/definitions/temp'
     delete:
       security:
         - Authorization: []
@@ -84,8 +97,8 @@ paths:
       summary: 删除指定的温度
       description: ""
       responses:
-        200:
-          description: OK
+        204:
+          description: No Content
   /temps:
     get:
       security:
@@ -96,6 +109,13 @@ paths:
       responses:
         200:
           description: OK
+          schema:
+            type: object
+            properties:
+              temps:
+                type: array
+                items:
+                  $ref: '#/definitions/temp'
 securityDefinitions:
   Authorization:
     type: apiKey
@@ -123,8 +143,55 @@ parameters:
     required: true
     type: integer
 definitions:
-  user:  # TODO(ten): fill it
+  timestamp:
+    type: string
+    format: date-time
+    description: ISO 8601/RFC3339 formatted DateTime
+    example: 2016-11-22T02:25:01Z
+  user:
     type: object
     properties:
       id:
         type: integer
+        example: 1
+      name:
+        type: string
+        example: awong1900
+      avatar_url:
+        type: string
+        example: https://avatars.githubusercontent.com/u/4022612?v=3
+      created_at:
+        $ref: '#/definitions/timestamp'
+      updated_at:
+        $ref: '#/definitions/timestamp'
+  temp: 
+    type: object
+    properties:
+      id:
+        type: integer
+        example: 1
+      name:
+        type: string
+        example: home one
+      description:
+        type: string
+        example: Home south glass
+      owner:
+        $ref: '#/definitions/user'
+      private:
+        type: boolean
+        example: false
+      gps:
+        type: string
+        example: 33,23
+      picture_url:
+        type: string
+        example: https://temp.io/1.jpg
+      created_at:
+        $ref: '#/definitions/timestamp'
+      updated_at:
+        $ref: '#/definitions/timestamp'
+
+
+
+
