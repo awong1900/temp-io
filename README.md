@@ -35,20 +35,28 @@ API 前缀 /api/v1
 拿到授权后的token，在用token拿到用户ID后，然后去API服务器验证用户是否存在。
 
 ## 返回json设计
-user:
+- user:
 {
-  "login":  "awong1900",
   "id": 4022612,
-  "facebook_id": 1221,
-  "weixin_id": null,
-  "token": "facebook oauth2 token",
+  "name": "Ten Wong",
   "avatar_url": "https://avatars.githubusercontent.com/u/4022612?v=3",
-  "temperatures_url": "https://api.temp.io/users/awong1900/temperatures",
+  "temps": [
+    {
+      "id": 12,
+      "name": "home",
+      "description": "home temp"
+      "api": "http://"
+      "pic_url": "http://"
+      "private": false,
+      "created_at": "2016-03-07T01:30:30Z",
+      "updated_at": "2016-03-07T01:30:30Z",
+    }
+  ]
   "created_at": "2013-04-01T01:28:05Z",
-  "updated_at": "2016-03-07T12:35:08Z",
+  "updated_at": "2016-03-07T12:35:08Z"
 }
 
-temperature:
+- temperature:
 {
   "id": 53286538,
   "name": "home",
@@ -74,17 +82,22 @@ temperature:
 ### collection('users')
 mongoDB 推荐嵌入存储数据。（嵌入数据较少情况下）。
 {
-  "_ id": "double",
+  "_id": "ObjectID",
+  "id": "double"
   "facebook_id": "string",
   "weixin_id": "string",
   "name": "string",
+  "token": "string"
   "created_at": "data",
   "updated_at": "date",
   "temps": [
     {
-      "id": "double",
+      "id": "string",
       "name": "string",
+      "description": "string"
       "api": "string"
+      "pic_url": "string"
+      "private": "boolean"
       "created_at": "data",
       "updated_at": "date",
     }
