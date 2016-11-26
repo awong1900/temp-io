@@ -24,6 +24,12 @@ class User(object):
     def update_user(self, **kwargs):
         pass
 
+    @gen.coroutine
+    def get_user_by_token(self, token):
+        result = yield self.db.user.find_one({'tokens.token':token})
+        raise gen.Return(result)
+            
+            
 class Temp(object):
     """docstring for temp."""
     def __init__(self, db):
