@@ -52,8 +52,6 @@ class FirebaseSso(Sso):
         except Exception as e:
             raise Exception("Verify JWT token failure, {}".format(str(e)))
         
-        from pprint import pprint
-        pprint(payload)
         raise gen.Return({'user_id': payload['user_id'], 'token': token, 'expire': payload['exp']})
         
     @gen.coroutine

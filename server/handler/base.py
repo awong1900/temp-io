@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 # coding=utf-8
+from datetime import datetime
 from tornado import gen
 from tornado.web import RequestHandler
 from tornado.log import gen_log
 from lib import sso
-
+from db import User
+from db import Temp
 
 class BaseHandler(RequestHandler):
     """docstring for BaseHandler."""
@@ -32,9 +34,28 @@ class BaseHandler(RequestHandler):
         if not token:
             raise gen.Return((None, "Requires authentication"))
             
-        data = yield sso.auth_token(token)
-        raise gen.Return(('', ''))
-        # t = self.user_token_schema.get_user_token_by_token(token)
+        user = None
+        result = yield self.db_user.get_user_by_token(token)
+        if result is None:
+            try:
+                data = yield sso.auth_token(token)
+                doc_user = {
+                    'id': data['user_id'],
+                    'tokens': [
+                        {
+                            'token': data['token'],
+                            'expire': datetime.utcfromtimestamp(int(data['expire']))
+                        }
+                    ]}
+                result = yield self.db_user.add_user(data['user_id'], doc_user)
+                print 22, result
+                user = doc_user
+            except Exception as e:
+                gen_log.error(e)
+                raise gen.Return((None, "SSO authenticate token failure, {}".format(str(e))))
+        else:
+            print 111
+            pass  # return user
         # if t:
         #     if t.expire != datetime.utcfromtimestamp(0) and t.expire < datetime.utcnow():
         #         raise gen.Return((None, "Authentication has expired"))
@@ -56,4 +77,12 @@ class BaseHandler(RequestHandler):
             
         # user['is_admin'] = True if config.admins.get(user['user_id']) else False
         # user['token'] = token
-        # raise gen.Return((user, ''))
+        raise gen.Return((user, ''))
+
+    @property
+    def db_user(self):
+        return User()
+        
+    @property
+    def db_temp(self, arg):
+        return Temp()

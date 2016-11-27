@@ -5,19 +5,25 @@ import motor
 from tornado import gen
 from tornado.log import gen_log
 
-
-db = motor.motor_tornado.MotorClient('localhost', 27017).temp-io
-
-class User(object):
-    """docstring for user."""
-    def __init__(self, db):
-        super(User, self).__init__()
+db = motor.motor_tornado.MotorClient('localhost', 27017).temp_io
+class Db(object):
+    """docstring for Db."""
+    def __init__(self):
         self.db = db
+        
+class User(Db):
+    """docstring for user."""
+    def __init__(self):
+        super(User, self).__init__()
     
     @gen.coroutine
-    def add_user(self, **kwargs):
+    def add_user(self, id, document):
         try:
-            result = yield db.test_collection.insert_one(kwargs)
+            result = yield self.db.user.find_one({'id': id})
+            if result is None:
+                yield self.db.user.insert_one(document)
+            else:
+                yield self.db.user.update_one({'id': id}, {'$set': document})
         except Exception as e:
             gen_log.error(e)
 
@@ -30,11 +36,10 @@ class User(object):
         raise gen.Return(result)
             
             
-class Temp(object):
+class Temp(Db):
     """docstring for temp."""
-    def __init__(self, db):
+    def __init__(self):
         super(Temp, self).__init__()
-        self.db = db
         
     def add_temp(self, **kwargs):
         pass
