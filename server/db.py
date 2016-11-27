@@ -35,7 +35,12 @@ class User(Db):
         result = yield self.db.user.find_one({'tokens.token':token})
         raise gen.Return(result)
             
-            
+    @gen.coroutine
+    def is_expire(self, token):
+        # TODO: (ten), compare 0 or cur_time
+        result = yield self.db.user.find_one({'tokens.token':token})
+        raise gen.Return(result)
+        
 class Temp(Db):
     """docstring for temp."""
     def __init__(self):
