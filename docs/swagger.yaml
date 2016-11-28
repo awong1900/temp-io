@@ -69,7 +69,7 @@ paths:
         - Authorization: []
         - access_token: []
       summary: 创建一个温度
-      description: ""
+      description: 创建温度后，前端UI应提供界面把ID和KEY写入实际设备中，完成绑定。
       responses:
         200:
           description: OK
@@ -183,12 +183,20 @@ definitions:
         $ref: '#/definitions/timestamp'
       updated_at:
         $ref: '#/definitions/timestamp'
-  temp: 
+  temp:
     type: object
     properties:
       id:
         type: integer
+        description: 从WIO返回
         example: 1
+      key:
+        type: string
+        description: 从WIO返回
+      online:
+        type: boolean
+        description: 从WIO返回，随时变化
+        example: true
       name:
         type: string
         example: home one
@@ -210,7 +218,3 @@ definitions:
         $ref: '#/definitions/timestamp'
       updated_at:
         $ref: '#/definitions/timestamp'
-
-
-
-

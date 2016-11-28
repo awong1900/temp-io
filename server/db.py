@@ -46,8 +46,18 @@ class Temp(Db):
     def __init__(self):
         super(Temp, self).__init__()
         
-    def add_temp(self, **kwargs):
-        pass
+    def add_temp(self, id, document):
+        try:
+            result = yield self.db.thing.find_one({'id': id})
+            if result is None:
+                document['updated_at'] = datetime.utcnow()
+                document['created_at'] = datetime.utcnow()
+                yield self.db.thing.insert_one(document)
+            else:
+                document['updated_at'] = datetime.utcnow()
+                yield self.db.thing.update_one({'id': id}, {'$set': document})
+        except Exception as e:
+            gen_log.error(e)
         
     def update_temp(self, **kwargs):
         pass
