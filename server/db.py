@@ -2,15 +2,19 @@
 # coding=utf-8
 
 import motor
+from datetime import datetime
 from tornado import gen
 from tornado.log import gen_log
 
 db = motor.motor_tornado.MotorClient('localhost', 27017).temp_io
+
+
 class Db(object):
     """docstring for Db."""
     def __init__(self):
         self.db = db
-        
+
+
 class User(Db):
     """docstring for user."""
     def __init__(self):
@@ -40,7 +44,8 @@ class User(Db):
         # TODO: (ten), compare 0 or cur_time
         result = yield self.db.user.find_one({'tokens.token':token})
         raise gen.Return(result)
-        
+
+
 class Temp(Db):
     """docstring for temp."""
     def __init__(self):
@@ -62,12 +67,11 @@ class Temp(Db):
     def update_temp(self, **kwargs):
         pass
         
-    def get_temp(self, **kwawrgs):
+    def get_temp(self, **kwargs):
         pass
         
     def del_temp(self, **kwargs):
         pass
         
-    def get_all_temp(self, **kwawrgs):
+    def get_all_temp(self, **kwargs):
         pass
-        

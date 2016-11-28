@@ -5,6 +5,7 @@ from tornado.log import gen_log
 from base import BaseHandler
 from lib import wio
 
+
 class TempHandler(BaseHandler):
     """docstring for TempHandler."""
     def get(self):
@@ -14,21 +15,22 @@ class TempHandler(BaseHandler):
     def post(self):
         try:
             thing = yield wio.add_thing()
-        except Exception ae e:
+        except Exception as e:
             gen_log.error(e)
+            raise
         document = {
-            "id": thing['thing_id']
-            "key": thing['key']
-            "online": thing['online']
-            "name": ""
-            "description": ""
-            "name": ""
-            "private": True
-            "gps": ""
+            "id": thing['thing_id'],
+            "key": thing['key'],
+            "online": thing['online'],
+            "name": "",
+            "description": "",
+            "private": True,
+            "gps": "",
             "picture_url": ""
         }
         result = yield self.db_temp.add_temp(thing['thing_id'], document)
-        
+
+
 class TempIdHandler(BaseHandler):
     """docstring for TempIdHandler."""
     pass
@@ -37,5 +39,3 @@ class TempIdHandler(BaseHandler):
 class TempsHandler(BaseHandler):
     """docstring for TempsHandler."""
     pass
-        
-        

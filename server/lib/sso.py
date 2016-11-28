@@ -1,12 +1,12 @@
+#!/usr/bin/env python
+# coding=utf-8
 import time
-import base64
 import jwt
 import json
 import re
 from cryptography.x509 import load_pem_x509_certificate
 from cryptography.hazmat.backends import default_backend
 from tornado import gen
-from tornado.escape import json_decode
 from tornado.httpclient import AsyncHTTPClient
 
 

@@ -8,11 +8,12 @@ from lib import sso
 from db import User
 from db import Temp
 
+
 class BaseHandler(RequestHandler):
     """docstring for BaseHandler."""
     def initialize(self):
         pass
-        
+
     @gen.coroutine
     def prepare(self):
         self.user, self._message = yield self.get_user(self.get_access_token())
@@ -65,5 +66,5 @@ class BaseHandler(RequestHandler):
         return User()
         
     @property
-    def db_temp(self, arg):
+    def db_temp(self):
         return Temp()

@@ -7,9 +7,9 @@ class UserHandler(BaseHandler):
     """docstring for UserHandler."""
     def get(self):
         pass
-        
+
+
 class UserIdHandler(BaseHandler):
     """docstring for UserIdHandler."""
     def get(self):
         pass
-        

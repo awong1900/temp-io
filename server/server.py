@@ -9,9 +9,11 @@ from handler import TempHandler
 from handler import TempIdHandler
 from handler import TempsHandler
 
+
 class MainHandler(tornado.web.RequestHandler):
     def get(self):
         self.write("Hello, world")
+
 
 def make_app():
     setting = dict(
