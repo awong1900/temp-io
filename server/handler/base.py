@@ -40,15 +40,19 @@ class BaseHandler(RequestHandler):
         if result is None:
             try:
                 data = yield sso.auth_token(token)
+                print data['ext'].get('picture')
                 doc_user = {
                     'id': data['user_id'],
+                    'sign_in_provider': data['ext']['firebase']['sign_in_provider'],
+                    'email': '' or data['ext'].get('email'),
+                    'picture': '' or data['ext'].get('picture'),
                     'tokens': [
                         {
                             'token': data['token'],
                             'expire': datetime.utcfromtimestamp(int(data['expire']))
                         }
                     ]}
-                result = yield self.db_user.add_user(data['user_id'], doc_user)
+                yield self.db_user.add_user(data['user_id'], doc_user)
                 user = {'id': data['user_id']}
             except Exception as e:
                 gen_log.error(e)
@@ -60,6 +64,14 @@ class BaseHandler(RequestHandler):
             user = {'id': result['id']}
 
         raise gen.Return((user, ''))
+
+    def get_current_user(self):
+        if self.user is None:
+            self.set_status(400)
+            self.write({"error": "Requires authentication"})
+            return
+        else:
+            return self.user
 
     @property
     def db_user(self):

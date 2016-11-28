@@ -19,15 +19,20 @@ class User(Db):
     """docstring for user."""
     def __init__(self):
         super(User, self).__init__()
-    
+
     @gen.coroutine
-    def add_user(self, id, document):
+    def get_user_by_uid(self, uid):
+        result = yield self.db.user.find_one({'id': uid})
+        raise gen.Return(result)
+
+    @gen.coroutine
+    def add_user(self, uid, document):
         try:
-            result = yield self.db.user.find_one({'id': id})
+            result = yield self.db.user.find_one({'id': uid})
             if result is None:
                 yield self.db.user.insert_one(document)
             else:
-                yield self.db.user.update_one({'id': id}, {'$set': document})
+                yield self.db.user.update_one({'id': uid}, {'$set': document})
         except Exception as e:
             gen_log.error(e)
 
@@ -36,13 +41,13 @@ class User(Db):
 
     @gen.coroutine
     def get_user_by_token(self, token):
-        result = yield self.db.user.find_one({'tokens.token':token})
+        result = yield self.db.user.find_one({'tokens.token': token})
         raise gen.Return(result)
             
     @gen.coroutine
     def is_expire(self, token):
         # TODO: (ten), compare 0 or cur_time
-        result = yield self.db.user.find_one({'tokens.token':token})
+        result = yield self.db.user.find_one({'tokens.token': token})
         raise gen.Return(result)
 
 
@@ -51,16 +56,16 @@ class Temp(Db):
     def __init__(self):
         super(Temp, self).__init__()
         
-    def add_temp(self, id, document):
+    def add_temp(self, tid, document):
         try:
-            result = yield self.db.thing.find_one({'id': id})
+            result = yield self.db.thing.find_one({'id': tid})
             if result is None:
                 document['updated_at'] = datetime.utcnow()
                 document['created_at'] = datetime.utcnow()
                 yield self.db.thing.insert_one(document)
             else:
                 document['updated_at'] = datetime.utcnow()
-                yield self.db.thing.update_one({'id': id}, {'$set': document})
+                yield self.db.thing.update_one({'id': tid}, {'$set': document})
         except Exception as e:
             gen_log.error(e)
         

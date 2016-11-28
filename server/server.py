@@ -18,6 +18,7 @@ class MainHandler(tornado.web.RequestHandler):
 def make_app():
     setting = dict(
         debug=True,
+        login_url='/'
     )
     return tornado.web.Application([
         (r"/", MainHandler),
@@ -29,6 +30,8 @@ def make_app():
     ], **setting)
 
 if __name__ == "__main__":
+    from tornado.log import enable_pretty_logging
+    enable_pretty_logging()
     app = make_app()
     app.listen(8888)
     tornado.ioloop.IOLoop.current().start()
