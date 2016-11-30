@@ -14,6 +14,7 @@ from handler import TempsHandler
 import db
 
 define("port", type=int, default=8888, help="Run server on a specific port")
+define("debug", type=int, default=1, help="0:false, 1:true")
        
        
 class MainHandler(tornado.web.RequestHandler):
@@ -23,7 +24,7 @@ class MainHandler(tornado.web.RequestHandler):
 
 def make_app():
     setting = dict(
-        debug=True,
+        debug=True if options.debug else False,
         login_url='/'
     )
     return tornado.web.Application([
