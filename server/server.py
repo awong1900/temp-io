@@ -4,6 +4,8 @@
 import tornado.ioloop
 import tornado.web
 from tornado.log import gen_log
+from tornado.options import define
+from tornado.options import options
 from handler import UserHandler
 from handler import UserIdHandler
 from handler import TempHandler
@@ -11,7 +13,9 @@ from handler import TempIdHandler
 from handler import TempsHandler
 import db
 
-
+define("port", type=int, default=8888, help="Run server on a specific port")
+       
+       
 class MainHandler(tornado.web.RequestHandler):
     def get(self):
         self.write("Hello, world")
@@ -34,8 +38,9 @@ def make_app():
 if __name__ == "__main__":
     from tornado.log import enable_pretty_logging
     enable_pretty_logging()
+    options.parse_command_line()
     gen_log.info(db.uri)
-    gen_log.info("http://localhost:8888")
+    gen_log.info("http://localhost:{}".format(options.port))
     app = make_app()
-    app.listen(8888)
+    app.listen(options.port)
     tornado.ioloop.IOLoop.current().start()
