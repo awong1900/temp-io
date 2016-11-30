@@ -3,11 +3,13 @@
 
 import tornado.ioloop
 import tornado.web
+from tornado.log import gen_log
 from handler import UserHandler
 from handler import UserIdHandler
 from handler import TempHandler
 from handler import TempIdHandler
 from handler import TempsHandler
+import db
 
 
 class MainHandler(tornado.web.RequestHandler):
@@ -32,6 +34,8 @@ def make_app():
 if __name__ == "__main__":
     from tornado.log import enable_pretty_logging
     enable_pretty_logging()
+    gen_log.info(db.uri)
+    gen_log.info("http://localhost:8888")
     app = make_app()
     app.listen(8888)
     tornado.ioloop.IOLoop.current().start()

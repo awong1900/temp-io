@@ -5,8 +5,11 @@ import motor
 from datetime import datetime
 from tornado import gen
 from tornado.log import gen_log
+from config import mongodb as mdb
 
-db = motor.motor_tornado.MotorClient('localhost', 27017).temp_io
+uri = "mongodb://{}:{}@{}:{}/temp_io".format(
+        mdb['user'], mdb['password'], mdb['host'], mdb['port'])
+db = motor.motor_tornado.MotorClient(uri).temp_io
 
 
 class Db(object):
