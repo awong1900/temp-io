@@ -1,3 +1,4 @@
 cryptography==1.6
 motor==1.0
 tornado==4.4.2
+tornado_cors==0.6.0

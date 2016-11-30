@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # coding=utf-8
 from datetime import datetime
+from tornado_cors import CorsMixin
 from tornado import gen
 from tornado.web import RequestHandler
 from tornado.log import gen_log
@@ -9,8 +10,11 @@ from db import User
 from db import Temp
 
 
-class BaseHandler(RequestHandler):
+class BaseHandler(CorsMixin, RequestHandler):
     """docstring for BaseHandler."""
+    CORS_ORIGIN = '*'
+    CORS_HEADERS = 'Content-Type, Authorization'
+    
     def initialize(self):
         pass
 
