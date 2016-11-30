@@ -5,8 +5,11 @@
         "description": "一个基于Seeed Wio Iot平台开发的快速查看窗外温度的装置。\n",
         "title": "Temp-io API"
     },
-    "host": "temp.io",
-    "basePath": "/api/v1",
+    "host": "api.temp-io.life",
+    "basePath": "/v1",
+    "schemes": [
+        "https"
+    ],
     "tags": [
         {
             "name": "user"
