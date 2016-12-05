@@ -75,15 +75,28 @@ class Temp(Db):
             
         result = yield self.db.thing.find_one({'id': tid})
         raise gen.Return(result)
+    
+    @gen.coroutine
+    def update_temp(self, tid, document):
+        result = yield db.thing.update_one({'id': tid}, {'$set': document})
+        new_doc = yield db.thing.find_one({'id': tid})
+        raise gen.Return(new_doc)
+    
+    @gen.coroutine
+    def get_temp(self, tid):
+        result = yield self.db.thing.find_one({'id': tid})
+        raise gen.Return(result)
         
-    def update_temp(self, **kwargs):
-        pass
+    @gen.coroutine
+    def get_all_temp_by_uid(self, uid):
+        cursor = db.thing.find({'uid': uid}).sort('updated_at')
+        raise gen.Return([document for document in (yield cursor.to_list(length=100))])
         
-    def get_temp(self, **kwargs):
-        pass
+    @gen.coroutine
+    def del_temp(self, tid):
+         yield db.thing.delete_many({'id': tid})
         
-    def del_temp(self, **kwargs):
-        pass
-        
-    def get_all_temp(self, **kwargs):
-        pass
+    @gen.coroutine
+    def get_all_temp(self):
+        cursor = db.thing.find({}).sort('updated_at')
+        raise gen.Return([document for document in (yield cursor.to_list(length=100))])  # FIXME: ten, list length, just public
