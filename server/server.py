@@ -29,10 +29,10 @@ def make_app():
     )
     return tornado.web.Application([
         (r"/", MainHandler),
-        (r"/v1/user/*", UserHandler),
-        (r"/v1/users/(.+)/*", UserIdHandler),
         (r"/v1/users/(.+)/temps/*", TempHandler),
         (r"/v1/users/(.+)/temps/(.+)/*", TempIdHandler),
+        (r"/v1/user/*", UserHandler),
+        (r"/v1/users/(.+)/*", UserIdHandler),
         (r"/v1/temps", TempsHandler),
     ], **setting)
 

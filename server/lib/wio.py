@@ -14,7 +14,7 @@ class Wio(object):
     
     @gen.coroutine
     def add_thing(self):
-        gen.Return({
+        raise gen.Return({
             "id": uuid.uuid4().hex,
             "key": uuid.uuid4().hex,
             "online": False
@@ -22,7 +22,7 @@ class Wio(object):
 
     @gen.coroutine
     def get_thing(self, id):
-        gen.Return({
+        raise gen.Return({
             "id": id,
             "key": '123',
             "online": False
@@ -30,7 +30,7 @@ class Wio(object):
 
     @gen.coroutine
     def get_temp(self, id):
-        gen.Return({
+        raise gen.Return({
             "temp": "15"
         })
 

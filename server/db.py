@@ -59,6 +59,7 @@ class Temp(Db):
     def __init__(self):
         super(Temp, self).__init__()
         
+    @gen.coroutine
     def add_temp(self, tid, document):
         try:
             result = yield self.db.thing.find_one({'id': tid})
@@ -71,6 +72,9 @@ class Temp(Db):
                 yield self.db.thing.update_one({'id': tid}, {'$set': document})
         except Exception as e:
             gen_log.error(e)
+            
+        result = yield self.db.thing.find_one({'id': tid})
+        raise gen.Return(result)
         
     def update_temp(self, **kwargs):
         pass
