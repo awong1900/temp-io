@@ -204,6 +204,18 @@ definitions:
         type: boolean
         description: 从WIO返回，随时变化
         example: true
+      temperature:
+        type: integer
+        example: 25
+      temperature_at:
+        $ref: '#/definitions/timestamp'
+      read_period:
+        type: integer
+        description: 单位为秒
+        example: 60
+      has_sleep:
+        type: boolean
+        example: true
       name:
         type: string
         example: home one
