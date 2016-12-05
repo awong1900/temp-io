@@ -4,7 +4,7 @@ from tornado import gen
 from tornado.log import gen_log
 from base import BaseHandler
 from lib import wio
-
+from lib.utils import jsonify
 
 class TempHandler(BaseHandler):
     """docstring for TempHandler."""
@@ -30,15 +30,12 @@ class TempHandler(BaseHandler):
             "picture_url": ""
         }
         result = yield self.db_temp.add_temp(thing['id'], document)
-        # self.write(doc)
-        from bson import json_util
-        import json
-        # print dumps(result)
-        # print json.dumps(result, default=json_util.default)
-        # print json.dumps(result, indent=4, sort_keys=True, default=lambda x:str(x))
-        print json.dumps(result, sort_keys=True, indent=4, default=json_util.default)
+        # self.set_header("Content-Type", "application/json")
+        data = jsonify(result)
+        data.pop('_id')
+        self.write(data)
 
-
+        
 class TempIdHandler(BaseHandler):
     """docstring for TempIdHandler."""
     pass
