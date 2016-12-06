@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 # coding=utf-8
-
+import time
 import tornado.ioloop
+from tornado.ioloop import IOLoop
 import tornado.web
 from tornado.log import gen_log
 from tornado.options import define
@@ -12,6 +13,7 @@ from handler import TempHandler
 from handler import TempIdHandler
 from handler import TempsHandler
 import db
+from lib.temp_task import task
 
 define("port", type=int, default=8888, help="Run server on a specific port")
 define("debug", type=int, default=1, help="0:false, 1:true")
@@ -19,6 +21,9 @@ define("debug", type=int, default=1, help="0:false, 1:true")
        
 class MainHandler(tornado.web.RequestHandler):
     def get(self):
+        temp_id = self.get_argument('id')
+        IOLoop.current().add_timeout(time.time() + 2, task, temp_id)
+        self.write("Hello, world")
         self.write("Hello, world")
 
 

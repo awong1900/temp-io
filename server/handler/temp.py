@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # coding=utf-8
+from datetime import datetime
 from tornado import gen
 from tornado.log import gen_log
 from tornado.escape import json_decode
@@ -30,6 +31,10 @@ class TempHandler(BaseHandler):
             "id": thing['id'],
             "key": thing['key'],
             "online": thing['online'],
+            "temperature": 0,
+            "temperature_at": datetime.utcnow(),
+            "read_period": 60,
+            "has_sleep": True,
             "name": "",
             "description": "",
             "private": True,
@@ -37,11 +42,11 @@ class TempHandler(BaseHandler):
             "picture_url": ""
         }
         result = yield self.db_temp.add_temp(thing['id'], document)
-        # self.set_header("Content-Type", "application/json")
         data = jsonify(result)
         data.pop('_id')
-        self.write(data)
-
+        self.finish(data)
+        
+        print 1111
         
 class TempIdHandler(BaseHandler):
     """docstring for TempIdHandler."""
