@@ -8,3 +8,8 @@ mongodb = {
     "user": "username",
     "password": "password",
 }
+
+# wio
+wio = {
+    "base_url": "http://localhost:8080",
+}

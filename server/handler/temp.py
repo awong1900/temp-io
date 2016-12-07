@@ -39,7 +39,10 @@ class TempHandler(BaseHandler):
             "description": "",
             "private": True,
             "gps": "",
-            "picture_url": ""
+            "picture_url": "",
+            "status": "",
+            "status_text": "",
+            "open": True,
         }
         result = yield self.db_temp.add_temp(thing['id'], document)
         data = jsonify(result)
