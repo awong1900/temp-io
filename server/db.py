@@ -77,8 +77,10 @@ class Temp(Db):
         raise gen.Return(result)
     
     @gen.coroutine
-    def update_temp(self, tid, document):
-        result = yield db.thing.update_one({'id': tid}, {'$set': document})
+    def update_temp(self, tid, document, temp_doc=None):
+        yield db.thing.update_one({'id': tid}, {'$set': document})
+        if temp_doc:
+            yield db.thing.update_one({'id': tid}, {'$push': {"temperatures":temp_doc}})
         new_doc = yield db.thing.find_one({'id': tid})
         raise gen.Return(new_doc)
     

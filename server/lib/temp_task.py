@@ -42,8 +42,13 @@ def task(*args):
     end_time = first_time + (3 * period)
     while True:
         try:
-            res = yield http_client.fetch(test_url, request_timeout=10)
-            temp = json.loads(res.body)['celsius_degree']
+            temps = []
+            for i in range(4):
+                res = yield http_client.fetch(test_url, request_timeout=10)
+                temps.append(json.loads(res.body)['celsius_degree'])
+                yield gen.sleep(2)
+            print temps
+            temp = round(sum(temps[1:])/(len(temps)-1), 1) 
         except Exception as e:
             if (time.time() > end_time):
                 gen_log.error(e)
@@ -55,7 +60,8 @@ def task(*args):
             continue
             
         yield Temp().update_temp(temp_id,
-            {"temperature": temp, "temperature_at": datetime.utcnow()})
+            {"temperature": temp, "temperature_at": datetime.utcnow()},
+            {"value": temp, "created_at": datetime.utcnow()})
         print temp
         break
     print access_token, period
