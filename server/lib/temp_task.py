@@ -60,7 +60,7 @@ class TempTask(object):
         doc = yield Temp().get_temp(temp_id)
         if doc is None:
             gen_log.info("Temp({}) be deleted!".format(temp_id))
-            self.remove_from_tasks(temp_id)
+            yield self.remove_from_tasks(temp_id)
             raise gen.Return()
 
         access_token = doc.get('key')
@@ -70,7 +70,7 @@ class TempTask(object):
 
         if not temp_open:
             gen_log.info("Temp({}) be closed!".format(temp_id))
-            self.remove_from_tasks(temp_id, "normal", "The temp is closed.")
+            yield self.remove_from_tasks(temp_id, "normal", "The temp is closed.")
             raise gen.Return()
 
         end_time = time.time()+(3*period)
@@ -88,7 +88,7 @@ class TempTask(object):
             except Exception as e:
                 if time.time() > end_time:
                     gen_log.error(e)
-                    self.remove_from_tasks(temp_id, "error", "The node is not wake up on three period.")
+                    yield self.remove_from_tasks(temp_id, "error", "The node is not wake up on three period.")
                     self.close_temp(temp_id)
                 yield gen.sleep(5)
                 gen_log.info(e)
