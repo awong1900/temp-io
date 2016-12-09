@@ -124,7 +124,7 @@
                     }
                 ],
                 "summary": "创建一个温度",
-                "description": "创建温度后，前端UI应提供界面把ID和KEY写入实际设备中，完成绑定。",
+                "description": "创建温度后，前端UI应提供界面把ID和KEY写入实际设备中，完成激活。",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -204,6 +204,96 @@
                 ],
                 "summary": "删除指定的温度",
                 "description": "",
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                }
+            }
+        },
+        "/users/{uid}/temps/{tid}/update": {
+            "parameters": [
+                {
+                    "$ref": "#/parameters/uid"
+                },
+                {
+                    "$ref": "#/parameters/tid"
+                }
+            ],
+            "put": {
+                "tags": [
+                    "temp"
+                ],
+                "security": [
+                    {
+                        "Authorization": []
+                    },
+                    {
+                        "access_token": []
+                    }
+                ],
+                "summary": "通过OTA(Over The Air)方式更新设备固件",
+                "description": "",
+                "responses": {
+                    "202": {
+                        "description": "Accepted"
+                    }
+                }
+            }
+        },
+        "/users/{uid}/temps/{tid}/history": {
+            "parameters": [
+                {
+                    "$ref": "#/parameters/uid"
+                },
+                {
+                    "$ref": "#/parameters/tid"
+                }
+            ],
+            "get": {
+                "tags": [
+                    "temp"
+                ],
+                "security": [
+                    {
+                        "Authorization": []
+                    },
+                    {
+                        "access_token": []
+                    }
+                ],
+                "summary": "获取温度的历史数据",
+                "description": "",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "temperatures": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/definitions/temperature"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/verify/activation": {
+            "get": {
+                "security": [
+                    {
+                        "Authorization": []
+                    },
+                    {
+                        "access_token": []
+                    }
+                ],
+                "summary": "校验是否激活",
+                "description": "实际是检测设备上线情况，如上线，代表已激活，设置temp的`activated`置`true`",
                 "responses": {
                     "204": {
                         "description": "No Content"
@@ -309,38 +399,46 @@
             "type": "object",
             "properties": {
                 "id": {
-                    "type": "integer",
-                    "description": "从WIO返回",
-                    "example": 1
+                    "type": "string",
+                    "description": "从WIO服务器获取，需要写入实际设备中",
+                    "example": "id123"
                 },
                 "key": {
                     "type": "string",
-                    "description": "从WIO返回"
+                    "description": "从WIO服务器获取，需要写入实际设备中",
+                    "example": "key123"
                 },
                 "online": {
                     "type": "boolean",
-                    "description": "从WIO返回，随时变化",
-                    "example": true
+                    "description": "从WIO服务器获取",
+                    "example": false
                 },
                 "temperature": {
                     "type": "integer",
+                    "description": "摄氏温度",
                     "example": 25
                 },
-                "temperature_at": {
+                "temperature_f": {
+                    "type": "integer",
+                    "description": "华氏温度",
+                    "example": 70
+                },
+                "temperature_updated_at": {
                     "$ref": "#/definitions/timestamp"
                 },
                 "read_period": {
                     "type": "integer",
-                    "description": "单位为秒",
+                    "description": "多久从传感器读一次数据，单位为秒",
                     "example": 60
                 },
                 "has_sleep": {
                     "type": "boolean",
+                    "description": "如果打开，读一次数据后，会自动休眠设备一定时间，下次读之前设备会自动唤醒。",
                     "example": true
                 },
                 "name": {
                     "type": "string",
-                    "example": "home one"
+                    "example": "Home"
                 },
                 "description": {
                     "type": "string",
@@ -352,6 +450,25 @@
                 "private": {
                     "type": "boolean",
                     "example": false
+                },
+                "open": {
+                    "type": "boolean",
+                    "description": "关闭或者打开读取， 如果超过3个读取周期没有读到数据，会自动关闭。同时错误信息在`status`,`status_text`。\n"
+                },
+                "status": {
+                    "type": "string",
+                    "description": "sdfsd",
+                    "example": "normal"
+                },
+                "status_text": {
+                    "type": "string",
+                    "description": "more status message or error message",
+                    "example": "The device is not wake up more three read period."
+                },
+                "activated": {
+                    "type": "boolean",
+                    "description": "是否激活了Temp-io设备，如果激活过程中，一段时间后，仍显示未激活，应重新激活设备。",
+                    "example": true
                 },
                 "gps": {
                     "type": "string",
@@ -365,6 +482,22 @@
                     "$ref": "#/definitions/timestamp"
                 },
                 "updated_at": {
+                    "$ref": "#/definitions/timestamp"
+                }
+            }
+        },
+        "temperature": {
+            "type": "object",
+            "properties": {
+                "temperature": {
+                    "type": "integer",
+                    "example": 25
+                },
+                "temperature_f": {
+                    "type": "integer",
+                    "example": 70
+                },
+                "created_at": {
                     "$ref": "#/definitions/timestamp"
                 }
             }
