@@ -14,9 +14,9 @@ class BaseHandler(CorsMixin, RequestHandler):
     """docstring for BaseHandler."""
     CORS_ORIGIN = '*'
     CORS_HEADERS = 'Content-Type, Authorization'
-    
+
     def initialize(self):
-        pass
+        self.temp_task = self.settings['temp_task']
 
     @gen.coroutine
     def prepare(self):

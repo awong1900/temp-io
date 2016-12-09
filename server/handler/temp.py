@@ -8,6 +8,7 @@ from base import BaseHandler
 from lib import wio
 from lib.utils import jsonify
 
+
 class TempHandler(BaseHandler):
     """docstring for TempHandler."""
     @gen.coroutine
@@ -16,9 +17,8 @@ class TempHandler(BaseHandler):
         datas = [jsonify(doc) for doc in docs]
         for data in datas[:]:
             data.pop('_id')
-        self.write({"temps": datas})
-        
-        
+        self.finish({"temps": datas})
+
     @gen.coroutine
     def post(self, uid):
         try:
@@ -32,25 +32,26 @@ class TempHandler(BaseHandler):
             "key": thing['key'],
             "online": thing['online'],
             "temperature": 0,
-            "temperature_at": datetime.utcnow(),
+            "temperature_f": 0,
+            "temperature_updated_at": datetime.utcnow(),
             "read_period": 60,
             "has_sleep": True,
+            "status": "",
+            "status_text": "",
+            "open": True,
+            "activated": False,
             "name": "",
             "description": "",
             "private": True,
             "gps": "",
             "picture_url": "",
-            "status": "",
-            "status_text": "",
-            "open": True,
         }
         result = yield self.db_temp.add_temp(thing['id'], document)
         data = jsonify(result)
         data.pop('_id')
         self.finish(data)
-        
-        print 1111
-        
+
+
 class TempIdHandler(BaseHandler):
     """docstring for TempIdHandler."""
     @gen.coroutine
@@ -62,7 +63,7 @@ class TempIdHandler(BaseHandler):
             return
         data = jsonify(result)
         data.pop('_id')
-        self.write(data)
+        self.finish(data)
         
     @gen.coroutine
     def patch(self, uid, tid):
@@ -72,7 +73,10 @@ class TempIdHandler(BaseHandler):
         result = yield self.db_temp.update_temp(tid, data)
         data = jsonify(result)
         data.pop('_id')
-        self.write(data)
+        self.finish(data)
+
+        if data.get('activated') and data.get('open'):
+            self.temp_task.add_in_tasks(tid)
         
     @gen.coroutine
     def delete(self, uid, tid):
@@ -80,7 +84,8 @@ class TempIdHandler(BaseHandler):
         yield self.db_temp.del_temp(tid)
         self.set_status(204)
         self.finish()
-    
+
+
 class TempsHandler(BaseHandler):
     """docstring for TempsHandler."""
     @gen.coroutine
@@ -89,4 +94,4 @@ class TempsHandler(BaseHandler):
         datas = [jsonify(doc) for doc in docs]
         for data in datas[:]:
             data.pop('_id')
-        self.write({"temps": datas})
+        self.finish({"temps": datas})
