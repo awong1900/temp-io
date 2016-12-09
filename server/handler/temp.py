@@ -2,10 +2,11 @@
 # coding=utf-8
 from datetime import datetime
 from tornado import gen
+from tornado import web
 from tornado.log import gen_log
 from tornado.escape import json_decode
 from base import BaseHandler
-from lib import wio
+from lib import WioAPI
 from lib.utils import jsonify
 
 
@@ -13,43 +14,53 @@ class TempHandler(BaseHandler):
     """docstring for TempHandler."""
     @gen.coroutine
     def get(self, uid):
+        # get node list from and update temp
+
         docs = yield self.db_temp.get_all_temp_by_uid(uid)
         datas = [jsonify(doc) for doc in docs]
         for data in datas[:]:
             data.pop('_id')
+
         self.finish({"temps": datas})
 
     @gen.coroutine
+    @web.authenticated
     def post(self, uid):
+        wio = WioAPI(self.current_user['token'])
         try:
-            thing = yield wio.add_thing()
+            thing = wio.api('/v1/nodes/create', body={"name": "12"}, method="POST", callback=self.print_callback)
+            print thing
         except Exception as e:
             gen_log.error(e)
             raise
-        document = {
-            "uid": uid,
-            "id": thing['id'],
-            "key": thing['key'],
-            "online": thing['online'],
-            "temperature": 0,
-            "temperature_f": 0,
-            "temperature_updated_at": datetime.utcnow(),
-            "read_period": 60,
-            "has_sleep": True,
-            "status": "",
-            "status_text": "",
-            "open": True,
-            "activated": False,
-            "name": "",
-            "description": "",
-            "private": True,
-            "gps": "",
-            "picture_url": "",
-        }
-        result = yield self.db_temp.add_temp(thing['id'], document)
-        data = jsonify(result)
-        data.pop('_id')
-        self.finish(data)
+        # document = {
+        #     "uid": uid,
+        #     "id": thing['id'],
+        #     "key": thing['key'],
+        #     "online": thing['online'],
+        #     "temperature": 0,
+        #     "temperature_f": 0,
+        #     "temperature_updated_at": datetime.utcnow(),
+        #     "read_period": 60,
+        #     "has_sleep": True,
+        #     "status": "",
+        #     "status_text": "",
+        #     "open": True,
+        #     "activated": False,
+        #     "name": "",
+        #     "description": "",
+        #     "private": True,
+        #     "gps": "",
+        #     "picture_url": "",
+        # }
+        # result = yield self.db_temp.add_temp(thing['id'], document)
+        # data = jsonify(result)
+        # data.pop('_id')
+        # self.finish(data)
+
+    @staticmethod
+    def print_callback(data):
+        print data
 
 
 class TempIdHandler(BaseHandler):

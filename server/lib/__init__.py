@@ -3,3 +3,4 @@
 
 from sso import sso
 from wio import wio
+from wioapi import WioAPI

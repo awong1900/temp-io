@@ -65,7 +65,7 @@ class BaseHandler(CorsMixin, RequestHandler):
             result = yield self.db_user.is_expire(token)
             if result is None:
                 raise gen.Return((None, "Authentication has expired"))
-            user = {'id': result['id']}
+            user = {'id': result['id'], 'token': token}
 
         raise gen.Return((user, ''))
 
