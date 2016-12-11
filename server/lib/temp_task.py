@@ -30,7 +30,7 @@ class TempTask(object):
     @gen.coroutine
     def remove_from_tasks(self, temp_id, status=None, status_text=None):
         self.tasks.remove(temp_id)
-        if status is None:
+        if status is not None:
             yield Temp().update_temp(temp_id, {"status": status, "status_text": status_text})
 
     @staticmethod
@@ -89,7 +89,7 @@ class TempTask(object):
                 if time.time() > end_time:
                     gen_log.error(e)
                     yield self.remove_from_tasks(temp_id, "error", "The node is not wake up on three period.")
-                    self.close_temp(temp_id)
+                    yield self.close_temp(temp_id)
                 yield gen.sleep(5)
                 gen_log.info(e)
                 continue
