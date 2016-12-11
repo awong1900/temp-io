@@ -6,7 +6,7 @@ from tornado import web
 from tornado.log import gen_log
 from tornado.escape import json_decode
 from base import BaseHandler
-from lib import WioAPI
+from lib.wio import Wio
 from lib.utils import jsonify
 
 
@@ -26,37 +26,37 @@ class TempHandler(BaseHandler):
     @gen.coroutine
     @web.authenticated
     def post(self, uid):
-        wio = WioAPI(self.current_user['token'])
+        wio = Wio(self.current_user['token'])
         try:
-            thing = wio.api('/v1/nodes/create', body={"name": "12"}, method="POST", callback=self.print_callback)
-            print thing
+            thing = yield wio.add_thing(body={"name": "12"})
+            print "++++ thing:", thing
         except Exception as e:
             gen_log.error(e)
             raise
-        # document = {
-        #     "uid": uid,
-        #     "id": thing['id'],
-        #     "key": thing['key'],
-        #     "online": thing['online'],
-        #     "temperature": 0,
-        #     "temperature_f": 0,
-        #     "temperature_updated_at": datetime.utcnow(),
-        #     "read_period": 60,
-        #     "has_sleep": True,
-        #     "status": "",
-        #     "status_text": "",
-        #     "open": True,
-        #     "activated": False,
-        #     "name": "",
-        #     "description": "",
-        #     "private": True,
-        #     "gps": "",
-        #     "picture_url": "",
-        # }
-        # result = yield self.db_temp.add_temp(thing['id'], document)
-        # data = jsonify(result)
-        # data.pop('_id')
-        # self.finish(data)
+        document = {
+            "uid": uid,
+            "id": thing['id'],
+            "key": thing['key'],
+            "online": False,
+            "temperature": 0,
+            "temperature_f": 0,
+            "temperature_updated_at": datetime.utcnow(),
+            "read_period": 60,
+            "has_sleep": True,
+            "status": "",
+            "status_text": "",
+            "open": True,
+            "activated": False,
+            "name": "",
+            "description": "",
+            "private": True,
+            "gps": "",
+            "picture_url": "",
+        }
+        result = yield self.db_temp.add_temp(thing['id'], document)
+        data = jsonify(result)
+        data.pop('_id')
+        self.finish(data)
 
     @staticmethod
     def print_callback(data):

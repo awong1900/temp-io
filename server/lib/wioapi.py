@@ -32,10 +32,12 @@ class WioAPI(object):
     def __init__(self, access_token=None):
         self.access_token = access_token
 
+    @gen.coroutine
     def api(self, path, **kwargs):
-        self._make_request(path, **kwargs)
+        data = yield self._make_request(path, **kwargs)
+        raise gen.Return(data)
 
-    @gen.engine
+    @gen.coroutine
     def _make_request(self, path, query=None, method="GET", body=None, callback=None):
         """
         Makes request on `path` in the graph.
@@ -67,7 +69,8 @@ class WioAPI(object):
 
         client = AsyncHTTPClient()
         request = HTTPRequest(url, method=method, body=body)
-        response = yield gen.Task(client.fetch, request)
+        # response = yield gen.Task(client.fetch, request)
+        response = yield client.fetch(request)
 
         content_type = response.headers.get('Content-Type')
         print "#### content_type: ", content_type
@@ -85,7 +88,8 @@ class WioAPI(object):
 
         if data and isinstance(data, dict) and data.get("error"):
             raise WioAPIError(data)
-        callback(data)
+        # callback(data)
+        raise gen.Return(data)
 
 
 class WioAPIError(Exception):
