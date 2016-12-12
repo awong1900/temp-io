@@ -3,6 +3,7 @@
 
 import motor
 from datetime import datetime
+from bson.objectid import ObjectId
 from tornado import gen
 from tornado.log import gen_log
 from config import mongodb as mdb
@@ -60,20 +61,13 @@ class Temp(Db):
         super(Temp, self).__init__()
         
     @gen.coroutine
-    def add_temp(self, tid, document):
+    def add_temp(self, document):
         try:
-            result = yield self.db.thing.find_one({'id': tid})
-            if result is None:
-                document['updated_at'] = datetime.utcnow()
-                document['created_at'] = datetime.utcnow()
-                yield self.db.thing.insert_one(document)
-            else:
-                document['updated_at'] = datetime.utcnow()
-                yield self.db.thing.update_one({'id': tid}, {'$set': document})
+            result = yield self.db.thing.insert_one(document)
         except Exception as e:
             gen_log.error(e)
-            
-        result = yield self.db.thing.find_one({'id': tid})
+
+        result = yield self.db.thing.find_one({"_id": ObjectId(result.inserted_id)}, {"_id": 0})
         raise gen.Return(result)
     
     @gen.coroutine
@@ -91,7 +85,7 @@ class Temp(Db):
         
     @gen.coroutine
     def get_all_temp_by_uid(self, uid):
-        cursor = db.thing.find({'uid': uid}).sort('updated_at')
+        cursor = db.thing.find({'uid': uid}, {"_id": 0}).sort('updated_at')
         raise gen.Return([document for document in (yield cursor.to_list(length=100))])
         
     @gen.coroutine

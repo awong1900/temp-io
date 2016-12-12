@@ -17,30 +17,26 @@ class TempHandler(BaseHandler):
         # get node list from and update temp
 
         docs = yield self.db_temp.get_all_temp_by_uid(uid)
-        datas = [jsonify(doc) for doc in docs]
-        for data in datas[:]:
-            data.pop('_id')
-
-        self.finish({"temps": datas})
+        self.finish({"temps": [jsonify(doc) for doc in docs]})
 
     @gen.coroutine
     @web.authenticated
     def post(self, uid):
         wio = Wio(self.current_user['token'])
         try:
-            thing = yield wio.add_thing(body={"name": "12"})
-            print "++++ thing:", thing
+            thing = yield wio.add_thing()
         except Exception as e:
             gen_log.error(e)
             raise
+        cur_time = datetime.utcnow()
         document = {
             "uid": uid,
             "id": thing['id'],
             "key": thing['key'],
             "online": False,
             "temperature": 0,
-            "temperature_f": 0,
-            "temperature_updated_at": datetime.utcnow(),
+            "temperature_f": None,
+            "temperature_updated_at": None,
             "read_period": 60,
             "has_sleep": True,
             "status": "",
@@ -52,15 +48,12 @@ class TempHandler(BaseHandler):
             "private": True,
             "gps": "",
             "picture_url": "",
+            "updated_at": cur_time,
+            "created_at": cur_time
         }
-        result = yield self.db_temp.add_temp(thing['id'], document)
+        result = yield self.db_temp.add_temp(document)
         data = jsonify(result)
-        data.pop('_id')
         self.finish(data)
-
-    @staticmethod
-    def print_callback(data):
-        print data
 
 
 class TempIdHandler(BaseHandler):

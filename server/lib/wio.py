@@ -9,13 +9,14 @@ from lib.wioapi import WioAPI
 class Wio(WioAPI):
     """docstring for Wio.
     
-        Ansy http access from wio server.
+        Async http access from wio server.
     """
     def __init__(self, access_token=None):
         super(Wio, self).__init__(access_token)
     
     @gen.coroutine
     def add_thing(self, body=None):
+        body = body or {"name": "anonymous"}
         try:
             thing = yield self.api('/v1/nodes/create', body=body, method="POST")
         except Exception as e:
