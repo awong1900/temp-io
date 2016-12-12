@@ -2,7 +2,7 @@
     "swagger": "2.0",
     "info": {
         "version": "0.0.2",
-        "description": "一个基于Seeed Wio Iot平台开发的快速查看窗外温度的装置。\n\n## Online test\n1. 从https://awong1900.github.io/quickstart-js/email.html登陆\n2. 拷贝token填入右上角认证\n",
+        "description": "一个基于Seeed Wio Iot平台开发的快速查看窗外温度的装置。\n\n## Online test\n1. 从https://awong1900.github.io/quickstart-js 登陆\n2. 拷贝token填入右上角认证\n",
         "title": "Temp-io API"
     },
     "host": "api.temp-io.life",
@@ -19,7 +19,7 @@
         }
     ],
     "paths": {
-        "/user": {
+        "/me": {
             "get": {
                 "tags": [
                     "user"

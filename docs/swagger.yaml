@@ -6,7 +6,7 @@ info:
     一个基于Seeed Wio Iot平台开发的快速查看窗外温度的装置。
     
     ## Online test
-    1. 从https://awong1900.github.io/quickstart-js/email.html登陆
+    1. 从https://awong1900.github.io/quickstart-js 登陆
     2. 拷贝token填入右上角认证
     
   title: Temp-io API
@@ -18,7 +18,7 @@ tags:
   - name: user
   - name: temp
 paths:
-  /user:
+  /me:
     get:
       tags:
         - user
