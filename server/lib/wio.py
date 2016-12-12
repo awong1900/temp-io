@@ -45,6 +45,14 @@ class Wio(WioAPI):
         raise gen.Return(things)
 
     @gen.coroutine
+    def del_thing(self, tid):
+        try:
+            yield self.api('/v1/nodes/delete', body={"node_sn": tid}, method="POST")
+        except Exception as e:
+            gen_log.error(e)
+            raise
+
+    @gen.coroutine
     def get_thing(self, tid):
         raise gen.Return({
             "id": id,

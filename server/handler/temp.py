@@ -68,33 +68,61 @@ class TempHandler(BaseHandler):
 class TempIdHandler(BaseHandler):
     """docstring for TempIdHandler."""
     @gen.coroutine
+    @web.authenticated
     def get(self, uid, tid):
         # TODO: (ten) authenticated uid is correct?
         result = yield self.db_temp.get_temp(tid)
         if result is None:
-            self.finish()
+            gen_log.error("Not this temp")
+            self.set_status(400)
+            self.finish({"error": "Not this temp"})
             return
+
+        wio = Wio(self.current_user['token'])
+        try:
+            thing_list = yield wio.get_all_thing()
+        except Exception as e:
+            gen_log.error(e)
         data = jsonify(result)
-        data.pop('_id')
+        for thing in thing_list:
+            if thing["id"] == data["id"]:
+                data["online"] = thing["online"]
         self.finish(data)
         
     @gen.coroutine
+    @web.authenticated
     def patch(self, uid, tid):
         # TODO: (ten) authenticated uid is correct?
         data = json_decode(self.request.body)
-        print data
+        # TODO: limit input field
+        if data.get('open'):
+            if data.get('activated'):
+                self.temp_task.add_in_tasks(tid)
+            else:
+                gen_log.error("Not activated!")
+                self.set_status(400)
+                self.finish({"error": "Not activated!"})
+                return
         result = yield self.db_temp.update_temp(tid, data)
+        if result is None:
+            self.set_status(400)
+            self.finish({"error": "Not found this temp"})
+            return
         data = jsonify(result)
-        data.pop('_id')
         self.finish(data)
-
-        if data.get('activated') and data.get('open'):
-            self.temp_task.add_in_tasks(tid)
         
     @gen.coroutine
     def delete(self, uid, tid):
         # TODO: (ten) authenticated uid is correct?
         yield self.db_temp.del_temp(tid)
+        wio = Wio(self.current_user['token'])
+        try:
+            yield wio.del_thing(tid)
+        except Exception as e:
+            gen_log.error(e)
+            self.set_status(400)
+            self.finish({"error": "del_thing error"})
+            return
         self.set_status(204)
         self.finish()
 
@@ -103,8 +131,6 @@ class TempsHandler(BaseHandler):
     """docstring for TempsHandler."""
     @gen.coroutine
     def get(self):
-        docs = yield self.db_temp.get_all_temp()
-        datas = [jsonify(doc) for doc in docs]
-        for data in datas[:]:
-            data.pop('_id')
-        self.finish({"temps": datas})
+        docs = yield self.db_temp.get_all_public_temp()
+        temp_list = [jsonify(doc) for doc in docs]
+        self.finish({"temps": temp_list})

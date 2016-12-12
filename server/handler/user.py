@@ -4,6 +4,7 @@ import json
 from tornado import gen
 from tornado.web import authenticated
 from base import BaseHandler
+from lib.utils import jsonify
 
 
 class UserHandler(BaseHandler):
@@ -13,13 +14,16 @@ class UserHandler(BaseHandler):
     def get(self):
         uid = self.current_user['id']
         user = yield self.db_user.get_user_by_uid(uid)
-        user.pop('_id')
         user.pop('tokens')
-        self.set_header("Content-Type", "application/json")
-        self.write(json.dumps(user))
+        self.finish(jsonify(user))
 
 
 class UserIdHandler(BaseHandler):
     """docstring for UserIdHandler."""
-    def get(self):
-        pass
+    @gen.coroutine
+    # @authenticated
+    def get(self, uid):
+        print 1111
+        user = yield self.db_user.get_user_by_uid(uid)
+        user.pop('tokens')
+        self.finish(jsonify(user))

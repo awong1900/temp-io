@@ -26,7 +26,7 @@ class User(Db):
 
     @gen.coroutine
     def get_user_by_uid(self, uid):
-        result = yield self.db.user.find_one({'id': uid})
+        result = yield self.db.user.find_one({'id': uid}, {'_id': 0})
         raise gen.Return(result)
 
     @gen.coroutine
@@ -74,13 +74,13 @@ class Temp(Db):
     def update_temp(self, tid, document, temp_doc=None):
         yield db.thing.update_one({'id': tid}, {'$set': document})
         if temp_doc:
-            yield db.thing.update_one({'id': tid}, {'$push': {"temperatures":temp_doc}})
-        new_doc = yield db.thing.find_one({'id': tid})
+            yield db.thing.update_one({'id': tid}, {'$push': {"temperatures": temp_doc}})
+        new_doc = yield db.thing.find_one({'id': tid}, {'_id': 0})
         raise gen.Return(new_doc)
     
     @gen.coroutine
     def get_temp(self, tid):
-        result = yield self.db.thing.find_one({'id': tid})
+        result = yield self.db.thing.find_one({'id': tid}, {"_id": 0})
         raise gen.Return(result)
         
     @gen.coroutine
@@ -93,6 +93,6 @@ class Temp(Db):
          yield db.thing.delete_many({'id': tid})
         
     @gen.coroutine
-    def get_all_temp(self):
-        cursor = db.thing.find({}).sort('updated_at')
-        raise gen.Return([document for document in (yield cursor.to_list(length=100))])  # FIXME: ten, list length, just public
+    def get_all_public_temp(self):
+        cursor = db.thing.find({"private": False}, {'_id': 0}).sort('updated_at')
+        raise gen.Return([document for document in (yield cursor.to_list(length=100))])  # FIXME: ten, list length
