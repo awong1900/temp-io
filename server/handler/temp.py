@@ -13,11 +13,20 @@ from lib.utils import jsonify
 class TempHandler(BaseHandler):
     """docstring for TempHandler."""
     @gen.coroutine
+    @web.authenticated
     def get(self, uid):
-        # get node list from and update temp
-
+        wio = Wio(self.current_user['token'])
+        try:
+            thing_list = yield wio.get_all_thing()
+        except Exception as e:
+            gen_log.error(e)
         docs = yield self.db_temp.get_all_temp_by_uid(uid)
-        self.finish({"temps": [jsonify(doc) for doc in docs]})
+        temp_list = [jsonify(doc) for doc in docs]
+        for temp in temp_list[:]:  # FIXME, need more efficiency
+            for thing in thing_list:
+                if thing['id'] == temp['id']:
+                    temp['online'] = thing['online']
+        self.finish({"temps": temp_list})
 
     @gen.coroutine
     @web.authenticated
@@ -33,7 +42,7 @@ class TempHandler(BaseHandler):
             "uid": uid,
             "id": thing['id'],
             "key": thing['key'],
-            "online": False,
+            # "online": False,
             "temperature": 0,
             "temperature_f": None,
             "temperature_updated_at": None,

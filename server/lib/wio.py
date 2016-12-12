@@ -28,6 +28,23 @@ class Wio(WioAPI):
         })
 
     @gen.coroutine
+    def get_all_thing(self):
+        try:
+            node_list = yield self.api('/v1/nodes/list', method="GET")
+        except Exception as e:
+            gen_log.error(e)
+            raise
+        things = []
+        for node in node_list['nodes']:
+            thing = {
+                "id": node['node_sn'],
+                "online": node['online']
+            }
+            things.append(thing)
+
+        raise gen.Return(things)
+
+    @gen.coroutine
     def get_thing(self, tid):
         raise gen.Return({
             "id": id,
