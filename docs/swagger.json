@@ -44,7 +44,7 @@
                 }
             }
         },
-        "/user/{uid}": {
+        "/users/{uid}": {
             "parameters": [
                 {
                     "$ref": "#/parameters/uid"

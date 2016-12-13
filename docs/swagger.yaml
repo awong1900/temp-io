@@ -32,7 +32,7 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/user'
-  /user/{uid}:
+  /users/{uid}:
     parameters:
       - $ref: '#/parameters/uid'
     get:
