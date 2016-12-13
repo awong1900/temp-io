@@ -83,6 +83,7 @@ class TempIdHandler(BaseHandler):
             thing_list = yield wio.get_all_thing()
         except Exception as e:
             gen_log.error(e)
+            return
         data = jsonify(result)
         for thing in thing_list:
             if thing["id"] == data["id"]:
@@ -112,6 +113,7 @@ class TempIdHandler(BaseHandler):
         self.finish(data)
         
     @gen.coroutine
+    @web.authenticated
     def delete(self, uid, tid):
         # TODO: (ten) authenticated uid is correct?
         yield self.db_temp.del_temp(tid)
@@ -126,6 +128,30 @@ class TempIdHandler(BaseHandler):
         self.set_status(204)
         self.finish()
 
+    @gen.coroutine
+    @web.authenticated
+    def post(self, uid, tid):
+        data = json_decode(self.request.body)
+        action_type = data.get('type')
+        if action_type is None:
+            gen_log.error("Need type field")
+            self.set_status(400)
+            self.finish({"error": "Need action_type parameter"})
+            return
+        if action_type == "verify-activation":
+            pass
+            wio = Wio(self.current_user['token'])
+            try:
+                activated = yield wio.get_activation(tid)
+            except Exception as e:
+                gen_log.error(e)
+                self.set_status(400)
+                self.finish({"error": "Verify activation failure."})
+                return
+            result = yield self.db_temp.update_temp(tid, {"activated": activated})
+            print result
+            self.finish(jsonify(result))
+
 
 class TempsHandler(BaseHandler):
     """docstring for TempsHandler."""
@@ -134,3 +160,31 @@ class TempsHandler(BaseHandler):
         docs = yield self.db_temp.get_all_public_temp()
         temp_list = [jsonify(doc) for doc in docs]
         self.finish({"temps": temp_list})
+
+
+class TempOtaHandler(BaseHandler):
+    @gen.coroutine
+    @web.authenticated
+    def post(self, uid, tid):
+        temp = yield self.db_temp.get_temp(tid)
+        if temp is None:
+            gen_log.error("Not this temp")
+            self.set_status(400)
+            self.finish({"error": "Not this temp"})
+            return
+
+        wio = Wio(self.current_user['token'])
+        try:
+            result = yield wio.add_ota(temp['key'])
+        except Exception as e:
+            gen_log.error(e)
+
+        # save to ota collection
+        # result = yield self.db_ota.update_temp(tid, data)
+
+        # loop to get ota status
+
+    @gen.coroutine
+    def get(self):
+        # query from ota collection
+        pass

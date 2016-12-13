@@ -38,7 +38,7 @@ class WioAPI(object):
         raise gen.Return(data)
 
     @gen.coroutine
-    def _make_request(self, path, query=None, method="GET", body=None, callback=None):
+    def _make_request(self, path, query=None, method="GET", body=None):
         """
         Makes request on `path` in the graph.
 

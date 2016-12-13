@@ -53,19 +53,49 @@ class Wio(WioAPI):
             raise
 
     @gen.coroutine
-    def get_thing(self, tid):
+    def add_ota(self, thing_key):
+        try:
+            body = {
+                "board_name": "Wio Link v1.0",  # TODO, different board do different json
+                "connections": [
+                    {
+                        "port": "D0",
+                        "sku": "101020019-ffff"
+                    }
+                ]
+            }
+            result = yield self.api('/v1/ota/trigger', query={"access_token": thing_key}, body=body, method="POST")
+        except Exception as e:
+            gen_log.error(e)
+            raise
         raise gen.Return({
-            "id": id,
-            "key": '123',
-            "online": False
+            "status": result['ota_status'],
+            "status_text": result['ota_msg']
         })
 
     @gen.coroutine
-    def get_temp(self, id):
+    def get_ota(self, thing_key):
+        try:
+            result = yield self.api('/v1/ota/status', query={"access_token": thing_key}, method="GET")
+        except Exception as e:
+            gen_log.error(e)
+            raise
         raise gen.Return({
-            "temp": "15"
+            "status": result['ota_status'],
+            "status_text": result['ota_msg']
         })
 
     @gen.coroutine
-    def get_node_list(self):
-        pass
+    def get_activation(self, thing_id):
+        try:
+            node_list = yield self.api('/v1/nodes/list', method="GET")
+        except Exception as e:
+            gen_log.error(e)
+            raise
+        for node in node_list['nodes']:
+            if node['node_sn'] == thing_id:
+                if node['online'] is True:
+                    raise gen.Return(True)
+                else:
+                    raise gen.Return(False)
+        raise Exception("Not this thing on wio server")

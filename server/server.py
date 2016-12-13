@@ -9,6 +9,7 @@ from handler import UserHandler
 from handler import UserIdHandler
 from handler import TempHandler
 from handler import TempIdHandler
+from handler import TempOtaHandler
 from handler import TempsHandler
 import db
 from lib.temp_task import TempTask
@@ -35,6 +36,7 @@ def make_app():
     return tornado.web.Application([
         (r"/", MainHandler),
         (r"/v1/users/(.+)/temps/*", TempHandler),
+        (r"/v1/users/(.+)/temps/(.+)/ota/*", TempOtaHandler),
         (r"/v1/users/(.+)/temps/(.+)/*", TempIdHandler),
         (r"/v1/me/*", UserHandler),
         (r"/v1/users/(.+)/*", UserIdHandler),
