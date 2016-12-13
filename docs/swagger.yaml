@@ -123,6 +123,26 @@ paths:
       responses:
         204:
           description: No Content
+    post:
+      parameters:
+        - name: verify-activation
+          in: body
+          required: true
+          description: 校验设备是否激活
+          schema:
+            $ref: "#/definitions/verifyActivation"
+      tags:
+        - temp
+      security:
+        - Authorization: []
+        - access_token: []
+      summary: 执行校验激活操作等
+      description: ""
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/temp'
   /users/{uid}/temps/{tid}/update:
     parameters:
       - $ref: '#/parameters/uid'
@@ -160,16 +180,6 @@ paths:
                 type: array
                 items:
                   $ref: '#/definitions/temperature'
-  /verify/activation:
-    get:
-      security:
-        - Authorization: []
-        - access_token: []
-      summary: 校验是否激活
-      description: 实际是检测设备上线情况，如上线，代表已激活，设置temp的`activated`置`true`
-      responses:
-        204:
-          description: No Content
   /temps:
     get:
       tags:
@@ -318,4 +328,11 @@ definitions:
         example: 70
       created_at:
         $ref: '#/definitions/timestamp'
+  verifyActivation:
+      type: object
+      properties:
+        type:
+          type: string
+          description: 实际是检测设备上线情况，如上线，代表已激活，设置temp的`activated`置`true`
+          example: verify-activation
             
