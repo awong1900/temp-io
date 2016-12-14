@@ -128,38 +128,26 @@ class TempIdHandler(BaseHandler):
         self.set_status(204)
         self.finish()
 
+
+class TempVerifyActivationHandler(BaseHandler):
     @gen.coroutine
     @web.authenticated
     def post(self, uid, tid):
-        data = json_decode(self.request.body)
-        action_type = data.get('type')
-        if action_type is None:
-            gen_log.error("Need type field")
+        wio = Wio(self.current_user['token'])
+        try:
+            activated = yield wio.get_activation(tid)
+        except Exception as e:
+            gen_log.error(e)
             self.set_status(400)
-            self.finish({"error": "Need action_type parameter"})
+            self.finish({"error": "Verify activation failure."})
             return
-        if action_type == "verify-activation":
-            pass
-            wio = Wio(self.current_user['token'])
-            try:
-                activated = yield wio.get_activation(tid)
-            except Exception as e:
-                gen_log.error(e)
-                self.set_status(400)
-                self.finish({"error": "Verify activation failure."})
-                return
-            result = yield self.db_temp.update_temp(tid, {"activated": activated})
-            print result
-            self.finish(jsonify(result))
-
-
-class TempsHandler(BaseHandler):
-    """docstring for TempsHandler."""
-    @gen.coroutine
-    def get(self):
-        docs = yield self.db_temp.get_all_public_temp()
-        temp_list = [jsonify(doc) for doc in docs]
-        self.finish({"temps": temp_list})
+        if activated is True:
+            yield self.db_temp.update_temp(tid, {"activated": activated})
+            self.set_status(204)
+            self.finish()
+        else:
+            self.set_status(400)
+            self.finish({"error": "Verify activation failure."})
 
 
 class TempOtaHandler(BaseHandler):
@@ -188,3 +176,13 @@ class TempOtaHandler(BaseHandler):
     def get(self):
         # query from ota collection
         pass
+
+
+
+class TempsHandler(BaseHandler):
+    """docstring for TempsHandler."""
+    @gen.coroutine
+    def get(self):
+        docs = yield self.db_temp.get_all_public_temp()
+        temp_list = [jsonify(doc) for doc in docs]
+        self.finish({"temps": temp_list})

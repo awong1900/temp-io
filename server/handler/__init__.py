@@ -6,4 +6,5 @@ from user import UserIdHandler
 from temp import TempHandler
 from temp import TempIdHandler
 from temp import TempsHandler
+from temp import TempVerifyActivationHandler
 from temp import TempOtaHandler
