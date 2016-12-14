@@ -10,6 +10,7 @@ from handler import UserIdHandler
 from handler import TempHandler
 from handler import TempIdHandler
 from handler import TempVerifyActivationHandler
+from handler import TempTemperaturesHandler
 from handler import TempOtaHandler
 from handler import TempsHandler
 import db
@@ -38,6 +39,7 @@ def make_app():
         (r"/", MainHandler),
         (r"/v1/users/(.+)/temps/*", TempHandler),
         (r"/v1/users/(.+)/temps/(.+)/verify-activation/*", TempVerifyActivationHandler),
+        (r"/v1/users/(.+)/temps/(.+)/temperatures/*", TempTemperaturesHandler),
         (r"/v1/users/(.+)/temps/(.+)/ota/*", TempOtaHandler),
         (r"/v1/users/(.+)/temps/(.+)/*", TempIdHandler),
         (r"/v1/me/*", UserHandler),

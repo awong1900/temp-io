@@ -8,6 +8,7 @@ from tornado.log import gen_log
 from lib import sso
 from db import User
 from db import Temp
+from db import Temperature
 
 
 class BaseHandler(CorsMixin, RequestHandler):
@@ -84,3 +85,7 @@ class BaseHandler(CorsMixin, RequestHandler):
     @property
     def db_temp(self):
         return Temp()
+
+    @property
+    def db_temperature(self):
+        return Temperature()

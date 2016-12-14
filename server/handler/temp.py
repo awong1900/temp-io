@@ -110,14 +110,14 @@ class TempIdHandler(BaseHandler):
     def patch(self, uid, tid):
         # TODO: (ten) authenticated uid is correct?
         data = json_decode(self.request.body)
+        temp = yield self.db_temp.get_temp(tid)
         # TODO: limit input field
         if data.get('open'):
-            if data.get('activated'):
+            if temp.get('activated'):
                 self.temp_task.add_in_tasks(tid)
             else:
-                gen_log.error("Not activated!")
                 self.set_status(400)
-                self.finish({"error": "Not activated!"})
+                self.finish({"error": "The temp-io is not activated!"})
                 return
         result = yield self.db_temp.update_temp(tid, data)
         if result is None:
@@ -221,6 +221,14 @@ class TempOtaHandler(BaseHandler):
             self.set_status(400)
             self.finish({"error", "Can't found ota status."})
         self.finish(jsonify(ota))
+
+
+class TempTemperaturesHandler(BaseHandler):
+    @gen.coroutine
+    @web.authenticated
+    def get(self, uid, tid):
+        result = yield self.db_temperature.get_all_temperature_by_tid(tid)
+        self.finish({"temperatures": jsonify(result)})
 
 
 class TempsHandler(BaseHandler):
