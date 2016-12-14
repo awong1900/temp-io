@@ -14,5 +14,11 @@ class JSONEncoder(json.JSONEncoder):
 
         return json.JSONEncoder.default(self, obj)
 
+
 def jsonify(result):
     return json.loads(json.dumps(result, cls=JSONEncoder))
+
+
+def fahrenheit(x):
+    return x * 1.8 + 32
+

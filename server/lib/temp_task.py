@@ -10,6 +10,7 @@ from tornado.ioloop import IOLoop
 from tornado.httpclient import AsyncHTTPClient
 from db import Temp
 from db import Temperature
+from utils import fahrenheit
 import config
 
 
@@ -47,8 +48,12 @@ class TempTask(object):
     @staticmethod
     @gen.coroutine
     def update_temp(temp_id, temp):
-        yield Temp().update_temp(temp_id, {"temperature": temp, "temperature_at": datetime.utcnow()})
-        yield Temperature().update_temperature(temp_id, {"value": temp, "created_at": datetime.utcnow()})
+        yield Temp().update_temp(temp_id, {"temperature": temp,
+                                           "temperature_f": fahrenheit(temp),
+                                           "temperature_updated_at": datetime.utcnow()})
+        yield Temperature().update_temperature(temp_id, {"temperature": temp,
+                                                         "temperature_f": fahrenheit(temp),
+                                                         "created_at": datetime.utcnow()})
 
     @gen.coroutine
     def task(self, *args):

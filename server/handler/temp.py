@@ -55,7 +55,7 @@ class TempHandler(BaseHandler):
             "key": thing['key'],
             # "online": False,
             "board_type": 1,
-            "temperature": 0,
+            "temperature": None,
             "temperature_f": None,
             "temperature_updated_at": None,
             "read_period": 60,
