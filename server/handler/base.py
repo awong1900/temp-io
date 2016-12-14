@@ -21,7 +21,7 @@ class BaseHandler(CorsMixin, RequestHandler):
     @gen.coroutine
     def prepare(self):
         self.user, self._message = yield self.get_user(self.get_access_token())
-        print self.user
+        # print self.user
         
     def get_access_token(self):
         token = self.get_argument("access_token", "")

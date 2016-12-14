@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # coding=utf-8
 from datetime import datetime
+from tornado.ioloop import IOLoop
+from tornado import httpclient
 from tornado import gen
 from tornado import web
 from tornado.log import gen_log
@@ -20,6 +22,13 @@ class TempHandler(BaseHandler):
             thing_list = yield wio.get_all_thing()
         except Exception as e:
             gen_log.error(e)
+            self.set_status(400)
+            self.finish({"error": "Get temp is failure, {}".format(e.message)})
+            return
+        if thing_list is None:
+            self.set_status(400)
+            self.finish({"temps": []})
+            return
         docs = yield self.db_temp.get_all_temp_by_uid(uid)
         temp_list = [jsonify(doc) for doc in docs]
         for temp in temp_list[:]:  # FIXME, need more efficiency
@@ -36,13 +45,16 @@ class TempHandler(BaseHandler):
             thing = yield wio.add_thing()
         except Exception as e:
             gen_log.error(e)
-            raise
+            self.set_status(400)
+            self.finish({"error": "Create thing is failure on Wio, {}".format(e.message)})
+            return
         cur_time = datetime.utcnow()
         document = {
             "uid": uid,
             "id": thing['id'],
             "key": thing['key'],
             # "online": False,
+            "board_type": 1,
             "temperature": 0,
             "temperature_f": None,
             "temperature_updated_at": None,
@@ -50,11 +62,11 @@ class TempHandler(BaseHandler):
             "has_sleep": True,
             "status": "",
             "status_text": "",
-            "open": True,
+            "open": False,
             "activated": False,
             "name": "",
             "description": "",
-            "private": True,
+            "private": False,
             "gps": "",
             "picture_url": "",
             "updated_at": cur_time,
@@ -62,6 +74,7 @@ class TempHandler(BaseHandler):
         }
         result = yield self.db_temp.add_temp(document)
         data = jsonify(result)
+        self.set_status(201)
         self.finish(data)
 
 
@@ -83,6 +96,8 @@ class TempIdHandler(BaseHandler):
             thing_list = yield wio.get_all_thing()
         except Exception as e:
             gen_log.error(e)
+            self.set_status(400)
+            self.finish({"error": "Get thing is failure on Wio, {}".format(e.message)})
             return
         data = jsonify(result)
         for thing in thing_list:
@@ -139,7 +154,7 @@ class TempVerifyActivationHandler(BaseHandler):
         except Exception as e:
             gen_log.error(e)
             self.set_status(400)
-            self.finish({"error": "Verify activation failure."})
+            self.finish({"error": "Get activation is failure on Wio, {}".format(e.message)})
             return
         if activated is True:
             yield self.db_temp.update_temp(tid, {"activated": activated})
@@ -161,22 +176,51 @@ class TempOtaHandler(BaseHandler):
             self.finish({"error": "Not this temp"})
             return
 
-        wio = Wio(self.current_user['token'])
+        thing_key = temp['key']
+        wio = Wio(thing_key)
         try:
-            result = yield wio.add_ota(temp['key'])
+            result = yield wio.add_ota()
         except Exception as e:
             gen_log.error(e)
+            self.set_status(400)
+            self.finish({"error": "Trigger OTA is failure."})
+            return
 
-        # save to ota collection
-        # result = yield self.db_ota.update_temp(tid, data)
+        ota = yield self.db_temp.update_ota(tid, {"status": result['status'], "status_text": result['status_text']})
+        self.set_status(202)
+        self.add_header("Location", "")  # TODO, get status url
+        self.finish(jsonify(ota))
 
-        # loop to get ota status
+        IOLoop.current().add_callback(self.get_ota, tid, thing_key)
 
     @gen.coroutine
-    def get(self):
-        # query from ota collection
-        pass
+    def get_ota(self, tid, thing_key):
+        """Long polling on Wio v1"""
+        wio = Wio(thing_key)
+        while 1:
+            try:
+                result = yield wio.get_ota()
+            except httpclient.HTTPError as e:
+                if e.code == 599:
+                    continue
+                elif e.code == 400:
+                    gen_log.error(e)
+                    break
+            except Exception as e:
+                gen_log.error(e)
+                break
+            yield self.db_temp.update_ota(tid, {"status": result['status'], "status_text": result['status_text']})
+            if result['status'] == "error" or result['status'] == "done":
+                break
 
+    @gen.coroutine
+    def get(self, uid, tid):
+        ota = yield self.db_temp.get_ota(tid)
+        if ota is None:
+            gen_log.error("Not ota field")
+            self.set_status(400)
+            self.finish({"error", "Can't found ota status."})
+        self.finish(jsonify(ota))
 
 
 class TempsHandler(BaseHandler):
