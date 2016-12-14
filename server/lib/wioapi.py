@@ -13,7 +13,11 @@
 #  limitations under the License.
 
 from tornado import gen
-from tornado.httpclient import HTTPRequest, AsyncHTTPClient
+from tornado.log import gen_log
+from tornado.httpclient import HTTPError
+from tornado.httpclient import HTTPRequest
+from tornado.httpclient import AsyncHTTPClient
+
 
 try:
     import urllib.parse as urllib
@@ -25,7 +29,9 @@ try:
 except ImportError:
     import simplejson as json
 
-BASE_URL = "https://temp-io.life"
+import config
+
+BASE_URL = config.wio['base_url']
 
 
 class WioAPI(object):
@@ -34,11 +40,15 @@ class WioAPI(object):
 
     @gen.coroutine
     def api(self, path, **kwargs):
-        data = yield self._make_request(path, **kwargs)
+        try:
+            data = yield self._make_request(path, **kwargs)
+        except Exception as e:
+            gen_log.error(e)
+            raise
         raise gen.Return(data)
 
     @gen.coroutine
-    def _make_request(self, path, query=None, method="GET", body=None):
+    def _make_request(self, path, query=None, method="GET", body=None, headers=None):
         """
         Makes request on `path` in the graph.
 
@@ -46,7 +56,7 @@ class WioAPI(object):
         query -- A dictionary that becomes a query string to be appended to the path
         method -- GET, POST, etc
         body -- message body
-        callback -- function to be called when the async request finishes
+        headers -- Like "Content-Type"
         """
         if not query:
             query = {}
@@ -58,46 +68,52 @@ class WioAPI(object):
         if method == "GET":
             body = None
         else:
-            body = urllib.urlencode(body) if body else ""
+            if headers and "json" in headers.get('Content-Type'):
+                body = json.dumps(body) if body else ""
+            else:
+                body = urllib.urlencode(body) if body else ""
 
         url = BASE_URL + path
         if query_string:
             url += "?" + query_string
 
-        print "=====>", url
-        print "###### method, body: ", method, body
+        # url = "https://wio.temp-io.life/v1/nodes/create?access_token=123"
+        print "URL=====>", url
+        print "method=====>", method
+        print "body=====>", body
 
         client = AsyncHTTPClient()
-        request = HTTPRequest(url, method=method, body=body)
-        # response = yield gen.Task(client.fetch, request)
-        response = yield client.fetch(request)
+        request = HTTPRequest(url, method=method, body=body, headers=headers)
+        try:
+            response = yield client.fetch(request)
+        except HTTPError as e:
+            raise WioAPIError(e)
+        except Exception as e:
+            gen_log.error(e)
+            raise
 
         content_type = response.headers.get('Content-Type')
         print "#### content_type: ", content_type
         print "#### body: ", response.body
-        if 'text' in content_type or 'json' in content_type:
+        if 'json' in content_type:
             data = json.loads(response.body.decode())
-        elif 'image' in content_type:
-            data = {
-                "data": response.body,
-                "mime-type": content_type,
-                "url": response.request.url,
-            }
         else:
-            raise WioAPIError('Maintype was not json, text or image')
+            raise WioAPIError('Maintype was not json')
 
-        if data and isinstance(data, dict) and data.get("error"):
-            raise WioAPIError(data)
-        # callback(data)
         raise gen.Return(data)
 
 
+# noinspection PyBroadException
 class WioAPIError(Exception):
-    def __init__(self, result):
-        self.result = result
+    def __init__(self, error):
+        self.error = error
         try:
-            self.message = result["error"]
+            data = json.loads(self.error.response.body)
+            try:
+                self.message = data["error"]
+            except:
+                self.message = data
         except:
-            self.message = result
+            self.message = self.error
 
         Exception.__init__(self, self.message)

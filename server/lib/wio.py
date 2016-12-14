@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # coding=utf-8
-import uuid
 from tornado import gen
 from tornado.log import gen_log
 from lib.wioapi import WioAPI
@@ -9,7 +8,7 @@ from lib.wioapi import WioAPI
 class Wio(WioAPI):
     """docstring for Wio.
     
-        Async http access from wio server.
+    Async http access from wio server.
     """
     def __init__(self, access_token=None):
         super(Wio, self).__init__(access_token)
@@ -53,7 +52,7 @@ class Wio(WioAPI):
             raise
 
     @gen.coroutine
-    def add_ota(self, thing_key):
+    def add_ota(self):
         try:
             body = {
                 "board_name": "Wio Link v1.0",  # TODO, different board do different json
@@ -64,7 +63,8 @@ class Wio(WioAPI):
                     }
                 ]
             }
-            result = yield self.api('/v1/ota/trigger', query={"access_token": thing_key}, body=body, method="POST")
+            result = yield self.api('/v1/ota/trigger', body=body, method="POST",
+                                    headers={"Content-Type": "application/json"})
         except Exception as e:
             gen_log.error(e)
             raise
@@ -74,9 +74,16 @@ class Wio(WioAPI):
         })
 
     @gen.coroutine
-    def get_ota(self, thing_key):
+    def get_ota(self):
+        """Get ota status from wio server, Long polling
+
+        {"ota_msg": "Building the firmware...", "ota_status": "going"}
+        {"ota_msg": "Notifying the node...[0]", "ota_status": "going"}
+        {"ota_msg": "Notifying the node...[1]", "ota_status": "going"}  # try again
+        {"ota_msg": "Firmware updated.", "ota_status": "done"}
+        """
         try:
-            result = yield self.api('/v1/ota/status', query={"access_token": thing_key}, method="GET")
+            result = yield self.api('/v1/ota/status', method="GET")
         except Exception as e:
             gen_log.error(e)
             raise
