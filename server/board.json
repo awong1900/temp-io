@@ -1,0 +1,58 @@
+[
+  {
+    "id": 1,
+    "description": "WioLink + Grove-Temperature&Humidity",
+    "link": "",
+    "config": {
+      "board_name": "Wio Link v1.0",
+      "connections": [
+        {
+          "port": "D0",
+          "sku": "101020019-ffff"
+        }
+      ]
+    }
+  },
+  {
+    "id": 2,
+    "description": "WioLink + Grove-Temperature&Humidity Pro",
+    "link": "",
+    "config": {
+      "board_name": "Wio Link v1.0",
+      "connections": [
+        {
+          "port": "D0",
+          "sku": "101020019-ffff"
+        }
+      ]
+    }
+  },
+  {
+    "id": 3,
+    "description": "WioNode + Grove-Temperature&Humidity",
+    "link": "",
+    "config": {
+      "board_name": "Wio Node v1.0",
+      "connections": [
+        {
+          "port": "D0",
+          "sku": "101020019-ffff"
+        }
+      ]
+    }
+  },
+  {
+    "id": 4,
+    "description": "WioNode + Grove-Temperature&Humidity pro",
+    "link": "",
+    "config": {
+      "board_name": "Wio Node v1.0",
+      "connections": [
+        {
+          "port": "D0",
+          "sku": "101020019-ffff"
+        }
+      ]
+    }
+  }
+]
