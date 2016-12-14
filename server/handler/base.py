@@ -4,6 +4,7 @@ from datetime import datetime
 from tornado_cors import CorsMixin
 from tornado import gen
 from tornado.web import RequestHandler
+from tornado.web import HTTPError
 from tornado.log import gen_log
 from lib import sso
 from db import User
@@ -72,8 +73,9 @@ class BaseHandler(CorsMixin, RequestHandler):
 
     def get_current_user(self):
         if self.user is None:
-            self.set_status(400)
-            self.write({"error": "Requires authentication"})
+            # raise HTTPError(400, "Requires authentication, {}".format(self._message))
+            self.set_status(400)  # FIXME, redirect to login_url issue
+            self.finish({"error": "Requires authentication, {}".format(self._message)})
             return
         else:
             return self.user

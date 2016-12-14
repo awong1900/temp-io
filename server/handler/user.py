@@ -23,7 +23,6 @@ class UserIdHandler(BaseHandler):
     @gen.coroutine
     # @authenticated
     def get(self, uid):
-        print 1111
         user = yield self.db_user.get_user_by_uid(uid)
         user.pop('tokens')
         self.finish(jsonify(user))

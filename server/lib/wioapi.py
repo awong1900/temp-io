@@ -41,7 +41,11 @@ class WioAPI(object):
     @gen.coroutine
     def api(self, path, **kwargs):
         try:
+            import time
+            s_time = time.time()
             data = yield self._make_request(path, **kwargs)
+            e_time = time.time()
+            gen_log.info("=====Time request wio api, {}".format(float(e_time)-float(s_time)))
         except Exception as e:
             gen_log.error(e)
             raise
@@ -78,9 +82,9 @@ class WioAPI(object):
             url += "?" + query_string
 
         # url = "https://wio.temp-io.life/v1/nodes/create?access_token=123"
-        print "URL=====>", url
-        print "method=====>", method
-        print "body=====>", body
+        gen_log.info("URL=====> {}".format(url))
+        gen_log.info("method=====> {}".format(method))
+        gen_log.info("body=====> {}".format(body))
 
         client = AsyncHTTPClient()
         request = HTTPRequest(url, method=method, body=body, headers=headers)
@@ -93,8 +97,8 @@ class WioAPI(object):
             raise
 
         content_type = response.headers.get('Content-Type')
-        print "#### content_type: ", content_type
-        print "#### body: ", response.body
+        gen_log.info("#### content_type: {}".format(content_type))
+        gen_log.info("#### body: {}".format(response.body))
         if 'json' in content_type:
             data = json.loads(response.body.decode())
         else:
