@@ -115,5 +115,5 @@ class TempTask(object):
             self.update_status(temp_id, "normal", "The node is online mode.")
 
         IOLoop.current().add_timeout(time.time()+(period or 60), self.task, temp_id)
-        print self.tasks
+        gen_log.info("task ids: ({})".format(self.tasks))
         gen_log.info("===End task and restart({})====".format(temp_id))
