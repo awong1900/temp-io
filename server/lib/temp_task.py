@@ -26,8 +26,8 @@ class TempTask(object):
 
     def add_in_tasks(self, temp_id):
         if self.is_in_tasks(temp_id) is False:
-            IOLoop.current().add_callback(self.task, temp_id)
             self.tasks.add(temp_id)
+            IOLoop.current().add_callback(self.task, temp_id)
 
     @gen.coroutine
     def remove_from_tasks(self, temp_id, status=None, status_text=None):
