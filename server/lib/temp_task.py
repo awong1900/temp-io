@@ -95,7 +95,7 @@ class TempTask(object):
                     gen_log.error(e)
                     yield self.remove_from_tasks(temp_id, "error", "The node is not wake up on three period.")
                     yield self.close_temp(temp_id)
-                    break
+                    raise gen.Return()
                 yield gen.sleep(5)
                 gen_log.info(e)
                 continue
