@@ -3,35 +3,36 @@ swagger: '2.0'
 info:
   version: 0.0.2
   description: |
-    A useful IOT device to obtain the current temperature.
+    一个基于Seeed Wio Iot平台开发的快速查看窗外温度的装置。
     
     ## Online test
-    1. Open https://awong1900.github.io/quickstart-js login
-    2. Copy `access_token` fill in the upper right corner of the certificate
+    1. 从https://awong1900.github.io/quickstart-js 登陆
+    2. 拷贝token填入右上角认证
     
   title: Temp-io API
 host: api.temp-io.life
+basePath: /v1
 schemes:
   - https
 tags:
   - name: user
   - name: temp
 paths:
-  /v1/me:
+  /me:
     get:
       tags:
         - user
       security:
         - Authorization: []
         - access_token: []
-      summary: Get the current user information
+      summary: 获得当前用户信息
       description: ""
       responses:
         200:
           description: OK
           schema:
             $ref: '#/definitions/user'
-  /v1/users/{uid}:
+  /users/{uid}:
     parameters:
       - $ref: '#/parameters/uid'
     get:
@@ -40,14 +41,14 @@ paths:
       security:
         - Authorization: []
         - access_token: []
-      summary: Get the user information
+      summary: 获得用户信息
       description: ""
       responses:
         200:
           description: OK
           schema:
             $ref: '#/definitions/user'
-  /v1/users/{uid}/temps:
+  /users/{uid}/temps:
     parameters:
       - $ref: '#/parameters/uid'
     get:
@@ -56,7 +57,7 @@ paths:
       security:
         - Authorization: []
         - access_token: []
-      summary: Obtain all information of the user's temp-io
+      summary: 获得用户所有的温度
       description: ""
       responses:
         200:
@@ -74,14 +75,14 @@ paths:
       security:
         - Authorization: []
         - access_token: []
-      summary: Create a temp-io device
-      description: After the temperature is created, should use UDP command write the ID and KEY to the actual device and complete the activation.
+      summary: 创建一个温度
+      description: 创建温度后，前端UI应提供界面把ID和KEY写入实际设备中，完成激活。
       responses:
         200:
           description: OK
           schema:
             $ref: '#/definitions/temp'
-  /v1/users/{uid}/temps/{tid}:
+  /users/{uid}/temps/{tid}:
     parameters:
       - $ref: '#/parameters/uid'
       - $ref: '#/parameters/tid'
@@ -91,7 +92,7 @@ paths:
       security:
         - Authorization: []
         - access_token: []
-      summary: Obtain the specified temp-io information
+      summary: 获得指定的温度
       description: ""
       responses:
         200:
@@ -104,7 +105,7 @@ paths:
       security:
         - Authorization: []
         - access_token: []
-      summary: Updates the specified temp-io
+      summary: 更新指定的温度
       description: ""
       responses:
         200:
@@ -117,13 +118,13 @@ paths:
       security:
         - Authorization: []
         - access_token: []
-      summary: Deletes the specified temp-io
+      summary: 删除指定的温度
       description: ""
       responses:
         204:
           description: No Content
 
-  /v1/users/{uid}/temps/{tid}/verify-activation:
+  /users/{uid}/temps/{tid}/verify-activation:
     parameters:
       - $ref: '#/parameters/uid'
       - $ref: '#/parameters/tid'
@@ -133,12 +134,12 @@ paths:
       security:
         - Authorization: []
         - access_token: []
-      summary: Verifiy temp-io activation state
+      summary: 执行校验激活操作等
       description: ""
       responses:
         204:
           description: No Content
-  /v1/users/{uid}/temps/{tid}/ota:
+  /users/{uid}/temps/{tid}/ota:
     parameters:
       - $ref: '#/parameters/uid'
       - $ref: '#/parameters/tid'
@@ -148,12 +149,12 @@ paths:
       security:
         - Authorization: []
         - access_token: []
-      summary: The device firmware is updated via OTA (Over The Air)
+      summary: 通过OTA(Over The Air)方式更新设备固件
       description: ""
       responses:
         202:
           description: Accepted
-  /v1/users/{uid}/temps/{tid}/temperatures:
+  /users/{uid}/temps/{tid}/temperatures:
     parameters:
       - $ref: '#/parameters/uid'
       - $ref: '#/parameters/tid'
@@ -163,7 +164,7 @@ paths:
       security:
         - Authorization: []
         - access_token: []
-      summary: Obtain the history of temperature
+      summary: 获取温度的历史数据
       description: ""
       responses:
         200:
@@ -175,14 +176,14 @@ paths:
                 type: array
                 items:
                   $ref: '#/definitions/temperature'
-  /v1/temps:
+  /temps:
     get:
       tags:
         - temp
       security:
         - Authorization: []
         - access_token: []
-      summary: Obtain all the public temp-ios
+      summary: 获得所有的公开温度
       description: ""
       responses:
         200:
@@ -200,24 +201,24 @@ securityDefinitions:
     name: Authorization
     in: header
     description: |
-      Authentication information, add a access_token via Authorizatin header. Beginning of `token`, such as `token YOUR_ACCESS_TOKEN`
+      认证信息，通过Authorizatin头的方式添加token。以`token`开头空格后加上token,如`token your_token`
   access_token:
     type: apiKey
     name: access_token
     in: query
     description: |
-      Authentication information, through the query parameter access_token way to add token.
+      认证信息，通过query参数access_token方式添加token。
 parameters:
   uid:
     name: uid
     in: path
-    description: User ID
+    description: 用户ID
     required: true
     type: integer
   tid:
     name: tid
     in: path
-    description: Temp-io ID
+    description: 温度ID
     required: true
     type: integer
 definitions:
@@ -247,33 +248,33 @@ definitions:
     properties:
       id:
         type: string
-        description: Obtained from the WIO server, needs to be written to the actual device via UDP command
+        description: 从WIO服务器获取，需要写入实际设备中
         example: id123
       key:
         type: string
-        description: Obtained from the WIO server, needs to be written to the actual device via UDP command
+        description: 从WIO服务器获取，需要写入实际设备中
         example: key123
       online:
         type: boolean
-        description: Obtained from the WIO server
+        description: 从WIO服务器获取
         example: false
       temperature:
         type: integer
-        description: Celsius temperature
+        description: 摄氏温度
         example: 25
       temperature_f:
         type: integer
-        description: Fahrenheit temperature
+        description: 华氏温度
         example: 70
       temperature_updated_at:
         $ref: '#/definitions/timestamp'
       read_period:
         type: integer
-        description: How often to read data from the sensor, in seconds
+        description: 多久从传感器读一次数据，单位为秒
         example: 60
       has_sleep:
         type: boolean
-        description: If you turn on and read the data once, the device will automatically sleep for a certain period of time, and the device will automatically wake up before the next read.
+        description: 如果打开，读一次数据后，会自动休眠设备一定时间，下次读之前设备会自动唤醒。
         example: true
       name:
         type: string
@@ -289,7 +290,7 @@ definitions:
       open:
         type: boolean
         description: |
-          `closed` or `open`, if more than 3 read periods do not get the data, will automatically switch to 'closed'. While the error message is in `status`,` status_text`.
+          关闭或者打开读取， 如果超过3个读取周期没有读到数据，会自动关闭。同时错误信息在`status`,`status_text`。
       status:
         type: string
         description: sdfsd
@@ -300,7 +301,7 @@ definitions:
         example: The device is not wake up more three read period.
       activated:
         type: boolean
-        description: Temp-io device activated state. It can only be activated once.
+        description: 是否激活了Temp-io设备，如果激活过程中，一段时间后，仍显示未激活，应重新激活设备。
         example: true
       gps:
         type: string
@@ -323,5 +324,11 @@ definitions:
         example: 70
       created_at:
         $ref: '#/definitions/timestamp'
-
+  # verifyActivation:
+  #     type: object
+  #     properties:
+  #       type:
+  #         type: string
+  #         description: 实际是检测设备上线情况，如上线，代表已激活，设置temp的`activated`置`true`
+  #         example: verify-activation
             
