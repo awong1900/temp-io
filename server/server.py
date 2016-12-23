@@ -18,14 +18,11 @@ from lib.temp_task import TempTask
 
 define("port", type=int, default=8888, help="Run server on a specific port")
 define("debug", type=int, default=1, help="0:false, 1:true")
-       
-       
+temp_task = TempTask()
+
+
 class MainHandler(tornado.web.RequestHandler):
     def get(self):
-        temp_id = self.get_argument('id')
-        temp_task = self.settings['temp_task']
-        temp_task.add_in_tasks(temp_id)
-
         self.write("Hello, world")
 
 
@@ -33,7 +30,7 @@ def make_app():
     setting = dict(
         debug=True if options.debug else False,
         login_url='/',
-        temp_task=TempTask()
+        temp_task=temp_task
     )
     return tornado.web.Application([
         (r"/", MainHandler),
@@ -55,4 +52,5 @@ if __name__ == "__main__":
     gen_log.info("http://localhost:{}".format(options.port))
     app = make_app()
     app.listen(options.port)
+    tornado.ioloop.IOLoop.current().add_callback(temp_task.start_task_once)
     tornado.ioloop.IOLoop.current().start()

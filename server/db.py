@@ -9,7 +9,7 @@ from tornado.log import gen_log
 from config import mongodb as mdb
 
 uri = "mongodb://{}:{}@{}:{}/temp_io".format(
-        mdb['user'], mdb['password'], mdb['host'], mdb['port'])
+    mdb['user'], mdb['password'], mdb['host'], mdb['port'])
 db = motor.motor_tornado.MotorClient(uri).temp_io
 
 
@@ -18,9 +18,18 @@ class Db(object):
     def __init__(self):
         self.db = db
 
+    @gen.coroutine
+    def dump_cursor(self, cursor):
+        data_list = []
+        while (yield cursor.fetch_next):
+            item = yield cursor.next_object()
+            data_list.append(item)
+        gen.Return(data_list)
+
 
 class User(Db):
     """docstring for user."""
+
     def __init__(self):
         super(User, self).__init__()
 
@@ -47,7 +56,7 @@ class User(Db):
     def get_user_by_token(self, token):
         result = yield self.db.user.find_one({'tokens.token': token})
         raise gen.Return(result)
-            
+
     @gen.coroutine
     def is_expire(self, token):
         # TODO: (ten), compare 0 or cur_time
@@ -57,39 +66,44 @@ class User(Db):
 
 class Temp(Db):
     """docstring for temp."""
+
     def __init__(self):
         super(Temp, self).__init__()
-        
+
     @gen.coroutine
     def add_temp(self, document):
         result = yield self.db.temp.insert_one(document)
         result = yield self.db.temp.find_one({"_id": ObjectId(result.inserted_id)}, {"_id": 0, 'ota': 0})
         raise gen.Return(result)
-    
+
     @gen.coroutine
     def update_temp(self, tid, document):
         yield db.temp.update_one({'id': tid}, {'$set': document})
         result = yield db.temp.find_one({'id': tid}, {'_id': 0, 'ota': 0})
         raise gen.Return(result)
-    
+
     @gen.coroutine
     def get_temp(self, tid):
         result = yield self.db.temp.find_one({'id': tid}, {"_id": 0, 'ota': 0})
         raise gen.Return(result)
-        
+
     @gen.coroutine
     def get_all_temp_by_uid(self, uid):
         cursor = db.temp.find({'uid': uid}, {"_id": 0, 'ota': 0}).sort('updated_at')
         raise gen.Return([document for document in (yield cursor.to_list(length=100))])
-        
+
+    def get_all_open_temp(self):
+        cursor = self.db.temp.find({"open": True, "activated": True}, {'id': 1})
+        return cursor
+
+    @gen.coroutine
+    def get_all_public_temp(self):
+        cursor = self.db.temp.find({"private": False}, {'_id': 0, 'ota': 0}).sort('updated_at')
+        raise gen.Return([document for document in (yield cursor.to_list(length=100))])  # FIXME: ten, list length
+
     @gen.coroutine
     def del_temp(self, tid):
         yield db.temp.delete_many({'id': tid})
-        
-    @gen.coroutine
-    def get_all_public_temp(self):
-        cursor = db.temp.find({"private": False}, {'_id': 0, 'ota': 0}).sort('updated_at')
-        raise gen.Return([document for document in (yield cursor.to_list(length=100))])  # FIXME: ten, list length
 
     @gen.coroutine
     def update_ota(self, tid, document):
@@ -99,12 +113,13 @@ class Temp(Db):
 
     @gen.coroutine
     def get_ota(self, tid):
-        result = yield db.temp.find_one({'id': tid}, {'_id': 0, 'ota': 1})
+        result = yield self.db.temp.find_one({'id': tid}, {'_id': 0, 'ota': 1})
         raise gen.Return(result.get('ota') if result else None)
 
 
 class Temperature(Db):
     """DB operation for temperature history"""
+
     def __init__(self):
         super(Temperature, self).__init__()
 

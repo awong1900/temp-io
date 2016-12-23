@@ -31,7 +31,7 @@ class TempTask(object):
 
     @gen.coroutine
     def remove_from_tasks(self, temp_id, status=None, status_text=None):
-        gen_log.info("===> remove_from_tasks")
+        gen_log.info("===> remove Temp({}) from tasks".format(temp_id))
         self.tasks.remove(temp_id)
         if status is not None:
             yield Temp().update_temp(temp_id, {"status": status, "status_text": status_text})
@@ -92,12 +92,12 @@ class TempTask(object):
                 temp = round(sum(temps[1:])/(len(temps)-1), 1)
             except Exception as e:
                 if time.time() > end_time:
-                    gen_log.error(e)
+                    gen_log.error("Temp({}) {}".format(temp_id, e))
                     yield self.remove_from_tasks(temp_id, "error", "The node is not wake up on three period.")
                     yield self.close_temp(temp_id)
                     raise gen.Return()
                 yield gen.sleep(5)
-                gen_log.info(e)
+                gen_log.info("Temp({}) {}".format(temp_id, e))
                 continue
 
             gen_log.info("{} ==> {}".format(temps, temp))
@@ -119,3 +119,10 @@ class TempTask(object):
         IOLoop.current().add_timeout(time.time()+(period or 60), self.task, temp_id)
         gen_log.info("task ids: ({})".format(self.tasks))
         gen_log.info("===End task and restart({})====".format(temp_id))
+
+    @gen.coroutine
+    def start_task_once(self):
+        cursor = Temp().get_all_open_temp()
+        while (yield cursor.fetch_next):
+            temp = cursor.next_object()
+            self.add_in_tasks(temp['id'])
