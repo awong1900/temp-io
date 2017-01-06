@@ -81,29 +81,43 @@ class TempHandler(BaseHandler):
 class TempIdHandler(BaseHandler):
     """docstring for TempIdHandler."""
     @gen.coroutine
-    @web.authenticated
+    # @web.authenticated
     def get(self, uid, tid):
         # TODO: (ten) authenticated uid is correct?
+        print 4444, self.user
+        if self.user and self.user.get('id') == uid:
+            permission = True
+        else:
+            permission = False
+
         result = yield self.db_temp.get_temp(tid)
         if result is None:
             gen_log.error("Not this temp")
             self.set_status(400)
             self.finish({"error": "Not this temp"})
             return
-
-        wio = Wio(self.current_user['token'])
-        try:
-            thing_list = yield wio.get_all_thing()
-        except Exception as e:
-            gen_log.error(e)
-            self.set_status(400)
-            self.finish({"error": "Get thing is failure on Wio, {}".format(e.message)})
-            return
         data = jsonify(result)
-        for thing in thing_list:
-            if thing["id"] == data["id"]:
-                data["online"] = thing["online"]
-        self.finish(data)
+
+        if permission:
+            wio = Wio(self.current_user['token'])
+            try:
+                thing_list = yield wio.get_all_thing()
+            except Exception as e:
+                gen_log.error(e)
+                self.set_status(400)
+                self.finish({"error": "Get thing is failure on Wio, {}".format(e.message)})
+                return
+
+            for thing in thing_list:
+                if thing["id"] == data["id"]:
+                    data["online"] = thing["online"]
+
+            self.finish(data)
+        else:
+            value = {}
+            for key in ['temperature', 'temperature_f', 'temperature_updated_at', 'updated_at', 'created_at']:
+                value[key] = data[key]
+            self.finish(value)
         
     @gen.coroutine
     @web.authenticated
