@@ -13,3 +13,8 @@ mongodb = {
 wio = {
     "base_url": "http://localhost:8080",
 }
+
+# admin, can operate other user db
+admins = {
+    "ADMIN_USER_ID": True
+}

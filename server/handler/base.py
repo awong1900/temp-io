@@ -6,6 +6,7 @@ from tornado import gen
 from tornado.web import RequestHandler
 from tornado.web import HTTPError
 from tornado.log import gen_log
+import config
 from lib import sso
 from db import User
 from db import Temp
@@ -17,13 +18,18 @@ class BaseHandler(CorsMixin, RequestHandler):
     CORS_ORIGIN = '*'
     CORS_HEADERS = 'Content-Type, Authorization'
 
-    def initialize(self):
+    def __init__(self, application, request, **kwargs):
+        super(BaseHandler, self).__init__(application, request, **kwargs)
         self.temp_task = self.settings['temp_task']
+        self.user = None
+        self._message = None
 
     @gen.coroutine
     def prepare(self):
         self.user, self._message = yield self.get_user(self.get_access_token())
-        # print self.user
+        if self.user:
+            self.user['is_admin'] = True if config.admins.get(self.user['id']) else False
+        print self.user
         
     def get_access_token(self):
         token = self.get_argument("access_token", "")
@@ -67,7 +73,7 @@ class BaseHandler(CorsMixin, RequestHandler):
             result = yield self.db_user.is_expire(token)
             if result is None:
                 raise gen.Return((None, "Authentication has expired"))
-            user = {'id': result['id'], 'token': token}
+            user = {'id': result['id']}
 
         raise gen.Return((user, ''))
 
@@ -91,3 +97,17 @@ class BaseHandler(CorsMixin, RequestHandler):
     @property
     def db_temperature(self):
         return Temperature()
+
+
+class UserBaseHandler(BaseHandler):
+    @gen.coroutine
+    def prepare(self):
+        yield super(UserBaseHandler, self).prepare()
+        # self.thing = self.get_thing()
+
+    def get_thing(self):
+        uid = self.path_args[0]
+        # thing = self.thing_schema.get_thing_by_tid(tid)
+        # if not thing:
+        #     self.resp(404, 'Thing not found')
+        # return thing
