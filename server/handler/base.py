@@ -29,7 +29,7 @@ class BaseHandler(CorsMixin, RequestHandler):
         self.user, self._message = yield self.get_user(self.get_access_token())
         if self.user:
             self.user['is_admin'] = True if config.admins.get(self.user['id']) else False
-        print self.user
+        # print self.user
         
     def get_access_token(self):
         token = self.get_argument("access_token", "")
@@ -47,9 +47,8 @@ class BaseHandler(CorsMixin, RequestHandler):
         if not token:
             raise gen.Return((None, "Requires authentication"))
             
-        user = None
-        result = yield self.db_user.get_user_by_token(token)
-        if result is None:
+        user = yield self.db_user.get_user_by_token(token)
+        if user is None:
             try:
                 data = yield sso.auth_token(token)
                 print data['ext'].get('picture')
@@ -58,6 +57,7 @@ class BaseHandler(CorsMixin, RequestHandler):
                     'sign_in_provider': data['ext']['firebase']['sign_in_provider'],
                     'email': '' or data['ext'].get('email'),
                     'picture': '' or data['ext'].get('picture'),
+                    'pro': False,
                     'tokens': [
                         {
                             'token': data['token'],
@@ -65,26 +65,25 @@ class BaseHandler(CorsMixin, RequestHandler):
                         }
                     ]}
                 yield self.db_user.add_user(data['user_id'], doc_user)
-                user = {'id': data['user_id']}
+                raise gen.Return((doc_user, ''))
             except Exception as e:
                 gen_log.error(e)
-                raise gen.Return((None, "SSO authenticate token failure, {}".format(str(e))))
+                raise HTTPError(400, "SSO authenticate token failure, {}".format(str(e)))
         else:
             result = yield self.db_user.is_expire(token)
             if result is None:
-                raise gen.Return((None, "Authentication has expired"))
-            user = {'id': result['id']}
-
-        raise gen.Return((user, ''))
+                raise HTTPError(400, "Authentication has expired")
+            raise gen.Return((user, ''))
 
     def get_current_user(self):
         if self.user is None:
-            # raise HTTPError(400, "Requires authentication, {}".format(self._message))
-            self.set_status(400)  # FIXME, redirect to login_url issue
-            self.finish({"error": "Requires authentication, {}".format(self._message)})
-            return
+            raise HTTPError(400, "{}".format(self._message))
         else:
             return self.user
+
+    def write_error(self, status_code, **kwargs):
+        message = kwargs['exc_info'][1].log_message
+        self.finish({"error": message})
 
     @property
     def db_user(self):
@@ -103,11 +102,7 @@ class UserBaseHandler(BaseHandler):
     @gen.coroutine
     def prepare(self):
         yield super(UserBaseHandler, self).prepare()
-        # self.thing = self.get_thing()
-
-    def get_thing(self):
         uid = self.path_args[0]
-        # thing = self.thing_schema.get_thing_by_tid(tid)
-        # if not thing:
-        #     self.resp(404, 'Thing not found')
-        # return thing
+        if self.user:
+            self.user['myself'] = True if uid == self.user['id'] else False
+        print self.user
