@@ -34,6 +34,29 @@ class FirebaseSso(Sso):
     
     @gen.coroutine
     def auth_token(self, token):
+        """Get user info form firebase
+
+        example:
+        {
+            'picture': 'https://scontent.xx.fbcdn.net/XXX.jpg',
+            'sub': 'OCbl1hXpURcGp1s8MvyDxA27PXXX',
+            'user_id': 'OCbl1hXpURcGp1s8MvyDxA27PXXX',
+            'name': 'XX Ten',
+            'iss': 'https://securetoken.google.com/wioapp-c70a8',
+            'email_verified': False, 'firebase': {
+                'sign_in_provider': 'facebook.com',
+                'identities': {
+                    'facebook.com': ['XXX'],
+                    'email': ['XXX@hotmail.com']
+                }
+            },
+            'exp': 1484559214,
+            'auth_time': 1480328550,
+            'iat': 1484555614,
+            'email': 'XXX@hotmail.com',
+            'aud': 'wioapp-c70a8'
+        }
+        """
         header = jwt.get_unverified_header(token)
         kid = header.get('kid')
         if not kid:
@@ -44,14 +67,17 @@ class FirebaseSso(Sso):
                 yield self.request_cert()
             except Exception as e:
                 raise Exception("Requires JWT public certificate failure, {}".format(str(e)))
-                
+
+        if self.public_cert.get(kid) is None:
+            raise Exception("Authentication(kid) has expired")
+
         try:
             cert_obj = load_pem_x509_certificate(self.public_cert.get(kid).encode('utf-8'), default_backend())
             public_key = cert_obj.public_key()
             payload = jwt.decode(token, public_key, audience=self.PROJECT_ID, algorithms=['RS256'], verify=True)
         except Exception as e:
             raise Exception("Verify JWT token failure, {}".format(str(e)))
-        
+
         raise gen.Return({'user_id': payload['user_id'], 'token': token, 'expire': payload['exp'], "ext": payload})
         
     @gen.coroutine

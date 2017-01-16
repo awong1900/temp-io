@@ -20,15 +20,22 @@ class BaseHandler(CorsMixin, RequestHandler):
 
     def __init__(self, application, request, **kwargs):
         super(BaseHandler, self).__init__(application, request, **kwargs)
+        self.token = None
         self.temp_task = self.settings['temp_task']
         self.user = None
+        self.auth_user = None
         self._message = None
 
     @gen.coroutine
     def prepare(self):
-        self.user, self._message = yield self.get_user(self.get_access_token())
-        if self.user:
-            self.user['is_admin'] = True if config.admins.get(self.user['id']) else False
+        self.token = self.get_access_token()
+        self.auth_user, self._message = yield self.get_user(self.token)
+
+        if self.auth_user:
+            self.auth_user['is_admin'] = True if config.admins.get(self.auth_user['id']) else False
+
+        self.user = self.auth_user
+
         # print self.user
         
     def get_access_token(self):
@@ -51,9 +58,9 @@ class BaseHandler(CorsMixin, RequestHandler):
         if user is None:
             try:
                 data = yield sso.auth_token(token)
-                print data['ext'].get('picture')
                 doc_user = {
                     'id': data['user_id'],
+                    'name': data['ext']['name'],
                     'sign_in_provider': data['ext']['firebase']['sign_in_provider'],
                     'email': '' or data['ext'].get('email'),
                     'picture': '' or data['ext'].get('picture'),
@@ -76,10 +83,10 @@ class BaseHandler(CorsMixin, RequestHandler):
             raise gen.Return((user, ''))
 
     def get_current_user(self):
-        if self.user is None:
+        if self.auth_user is None:
             raise HTTPError(400, "{}".format(self._message))
         else:
-            return self.user
+            return self.auth_user
 
     def write_error(self, status_code, **kwargs):
         message = kwargs['exc_info'][1].log_message
@@ -99,10 +106,20 @@ class BaseHandler(CorsMixin, RequestHandler):
 
 
 class UserBaseHandler(BaseHandler):
+    def __init__(self, application, request, **kwargs):
+        super(UserBaseHandler, self).__init__(application, request, **kwargs)
+        self.req_user = None
+
     @gen.coroutine
     def prepare(self):
         yield super(UserBaseHandler, self).prepare()
         uid = self.path_args[0]
-        if self.user:
-            self.user['myself'] = True if uid == self.user['id'] else False
-        print self.user
+        if self.auth_user:
+            self.auth_user['myself'] = True if uid == self.auth_user['id'] else False
+
+        self.req_user = yield self.db_user.get_user_by_uid(uid)
+        if self.req_user is None:
+            raise HTTPError(404, "User not found!")
+
+        print self.auth_user
+        print self.req_user
