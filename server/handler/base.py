@@ -20,24 +20,20 @@ class BaseHandler(CorsMixin, RequestHandler):
 
     def __init__(self, application, request, **kwargs):
         super(BaseHandler, self).__init__(application, request, **kwargs)
-        self.token = None
+        self.req_token = None
         self.temp_task = self.settings['temp_task']
         self.user = None
-        self.auth_user = None
+        self.req_user = None
         self._message = None
 
     @gen.coroutine
     def prepare(self):
-        self.token = self.get_access_token()
-        self.auth_user, self._message = yield self.get_user(self.token)
+        self.req_token = self.get_access_token()
+        self.req_user, self._message = yield self.get_user(self.req_token)
+        if self.req_user:
+            self.req_user['is_admin'] = True if config.admins.get(self.req_user['id']) else False
+        self.user = self.req_user
 
-        if self.auth_user:
-            self.auth_user['is_admin'] = True if config.admins.get(self.auth_user['id']) else False
-
-        self.user = self.auth_user
-
-        # print self.user
-        
     def get_access_token(self):
         token = self.get_argument("access_token", "")
         if not token:
@@ -83,10 +79,10 @@ class BaseHandler(CorsMixin, RequestHandler):
             raise gen.Return((user, ''))
 
     def get_current_user(self):
-        if self.auth_user is None:
+        if self.req_user is None:
             raise HTTPError(400, "{}".format(self._message))
         else:
-            return self.auth_user
+            return self.req_user
 
     def write_error(self, status_code, **kwargs):
         message = kwargs['exc_info'][1].log_message
@@ -108,18 +104,29 @@ class BaseHandler(CorsMixin, RequestHandler):
 class UserBaseHandler(BaseHandler):
     def __init__(self, application, request, **kwargs):
         super(UserBaseHandler, self).__init__(application, request, **kwargs)
-        self.req_user = None
+        self.target_user = None
 
     @gen.coroutine
     def prepare(self):
         yield super(UserBaseHandler, self).prepare()
         uid = self.path_args[0]
-        if self.auth_user:
-            self.auth_user['myself'] = True if uid == self.auth_user['id'] else False
+        if self.req_user:
+            self.req_user['myself'] = True if uid == self.req_user['id'] else False
 
-        self.req_user = yield self.db_user.get_user_by_uid(uid)
-        if self.req_user is None:
+        self.target_user = yield self.db_user.get_user_by_uid(uid)
+        if self.target_user is None:
             raise HTTPError(404, "User not found!")
 
-        print self.auth_user
-        print self.req_user
+
+class TempBaseHandler(UserBaseHandler):
+    def __init__(self, application, request, **kwargs):
+        super(TempBaseHandler, self).__init__(application, request, **kwargs)
+        self.temp = None
+
+    @gen.coroutine
+    def prepare(self):
+        yield super(TempBaseHandler, self).prepare()
+        tid = self.path_args[1]
+        self.temp = yield self.db_temp.get_temp(tid)
+        if self.temp is None:
+            raise HTTPError(404, "Temp-io not found!")

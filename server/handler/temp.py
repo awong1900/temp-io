@@ -5,49 +5,59 @@ from tornado.ioloop import IOLoop
 from tornado import httpclient
 from tornado import gen
 from tornado import web
+from tornado.web import HTTPError
 from tornado.log import gen_log
 from tornado.escape import json_decode
 from base import BaseHandler
+from base import UserBaseHandler
+from base import TempBaseHandler
 from lib.wio import Wio
 from lib.utils import jsonify
 
 
-class TempHandler(BaseHandler):
-    """docstring for TempHandler."""
+class TempHandler(UserBaseHandler):
+    """Operate API /users/:id/temps"""
     @gen.coroutine
-    @web.authenticated
     def get(self, uid):
-        wio = Wio(self.current_user['token'])
-        try:
-            thing_list = yield wio.get_all_thing()
-        except Exception as e:
-            gen_log.error(e)
-            self.set_status(400)
-            self.finish({"error": "Get temp is failure, {}".format(e.message)})
-            return
-        if thing_list is None:
-            self.set_status(400)
-            self.finish({"temps": []})
-            return
-        docs = yield self.db_temp.get_all_temp_by_uid(uid)
-        temp_list = [jsonify(doc) for doc in docs]
-        for temp in temp_list[:]:  # FIXME, need more efficiency
-            for thing in thing_list:
-                if thing['id'] == temp['id']:
-                    temp['online'] = thing['online']
-        self.finish({"temps": temp_list})
+        """get all temp-io devices of specific user"""
+        if self.req_user and self.req_user['myself'] is True:
+            wio = Wio(self.req_token)
+            try:
+                thing_list = yield wio.get_all_thing()
+            except Exception as e:
+                gen_log.error(e)
+                raise HTTPError(400, "Get temp is failure, {}".format(e.message))
+            if thing_list is None:
+                self.set_status(200)
+                self.finish({"temps": []})
+                return
+            docs = yield self.db_temp.get_all_temp_by_uid(uid)
+            temp_list = [jsonify(doc) for doc in docs]
+            for temp in temp_list[:]:  # FIXME, need more efficiency
+                for thing in thing_list:
+                    if thing['id'] == temp['id']:
+                        temp['online'] = thing['online']
+            self.finish({"temps": temp_list})
+        else:
+            docs = yield self.db_temp.get_all_temp_by_uid(uid)
+            temp_list = []
+            for doc in docs:
+                if doc['private'] is False:
+                    temp_list.append(jsonify(doc))
+            self.finish({"temps": temp_list})
 
     @gen.coroutine
     @web.authenticated
     def post(self, uid):
-        wio = Wio(self.current_user['token'])
+        """create a temp-io device on server"""
+        if self.req_user and self.req_user['myself'] is False:
+            HTTPError(400, "No operation permission")
+        wio = Wio(self.req_token)
         try:
             thing = yield wio.add_thing()
         except Exception as e:
             gen_log.error(e)
-            self.set_status(400)
-            self.finish({"error": "Create thing is failure on Wio, {}".format(e.message)})
-            return
+            HTTPError(400, "Create temp-io is failure on built-in Wio server, {}".format(e.message))
         cur_time = datetime.utcnow()
         document = {
             "uid": uid,
@@ -78,43 +88,29 @@ class TempHandler(BaseHandler):
         self.finish(data)
 
 
-class TempIdHandler(BaseHandler):
-    """docstring for TempIdHandler."""
+class TempIdHandler(TempBaseHandler):
+    """Operate API /users/:id/temps/:id"""
     @gen.coroutine
-    # @web.authenticated
     def get(self, uid, tid):
-        # TODO: (ten) authenticated uid is correct?
-        print 4444, self.user
-        if self.user and self.user.get('id') == uid:
-            permission = True
-        else:
-            permission = False
-
-        result = yield self.db_temp.get_temp(tid)
-        if result is None:
-            gen_log.error("Not this temp")
-            self.set_status(400)
-            self.finish({"error": "Not this temp"})
-            return
-        data = jsonify(result)
-
-        if permission:
-            wio = Wio(self.current_user['token'])
+        if self.req_user and self.req_user['myself'] is True:
+            data = jsonify(self.temp)
+            wio = Wio(self.req_token)
             try:
                 thing_list = yield wio.get_all_thing()
             except Exception as e:
                 gen_log.error(e)
-                self.set_status(400)
-                self.finish({"error": "Get thing is failure on Wio, {}".format(e.message)})
-                return
+                raise HTTPError(400, "Get thing is failure from built-in Wio server, {}".format(e.message))
 
             for thing in thing_list:
                 if thing["id"] == data["id"]:
                     data["online"] = thing["online"]
-
             self.finish(data)
         else:
+            if self.temp['private'] is True:
+                raise HTTPError(400, "The device is private")
+            data = jsonify(self.temp)
             value = {}
+            # TODO, filter output value
             for key in ['temperature', 'temperature_f', 'temperature_updated_at', 'updated_at', 'created_at']:
                 value[key] = data[key]
             self.finish(value)
@@ -122,7 +118,8 @@ class TempIdHandler(BaseHandler):
     @gen.coroutine
     @web.authenticated
     def patch(self, uid, tid):
-        # TODO: (ten) authenticated uid is correct?
+        if self.req_user and self.req_user['myself'] is False:
+            HTTPError(400, "No operation permission")
         data = json_decode(self.request.body)
         temp = yield self.db_temp.get_temp(tid)
         # TODO: limit input field
@@ -133,20 +130,17 @@ class TempIdHandler(BaseHandler):
                 self.set_status(400)
                 self.finish({"error": "The temp-io is not activated!"})
                 return
-        result = yield self.db_temp.update_temp(tid, data)
-        if result is None:
-            self.set_status(400)
-            self.finish({"error": "Not found this temp"})
-            return
-        data = jsonify(result)
+        temp = yield self.db_temp.update_temp(tid, data)
+        data = jsonify(temp)
         self.finish(data)
         
     @gen.coroutine
     @web.authenticated
     def delete(self, uid, tid):
-        # TODO: (ten) authenticated uid is correct?
+        if self.req_user and self.req_user['myself'] is False:
+            HTTPError(400, "No operation permission")
         yield self.db_temp.del_temp(tid)
-        wio = Wio(self.current_user['token'])
+        wio = Wio(self.req_token)
         try:
             yield wio.del_thing(tid)
         except Exception as e:
@@ -158,18 +152,18 @@ class TempIdHandler(BaseHandler):
         self.finish()
 
 
-class TempVerifyActivationHandler(BaseHandler):
+class TempVerifyActivationHandler(TempBaseHandler):
     @gen.coroutine
     @web.authenticated
     def post(self, uid, tid):
-        wio = Wio(self.current_user['token'])
+        if self.req_user and self.req_user['myself'] is False:
+            HTTPError(400, "No operation permission")
+        wio = Wio(self.req_token)
         try:
             activated = yield wio.get_activation(tid)
         except Exception as e:
             gen_log.error(e)
-            self.set_status(400)
-            self.finish({"error": "Get activation is failure on Wio, {}".format(e.message)})
-            return
+            raise HTTPError(400, "Get activation is failure on built-in Wio server, {}".format(e.message))
         if activated is True:
             yield self.db_temp.update_temp(tid, {"activated": activated})
             self.set_status(204)
@@ -179,26 +173,19 @@ class TempVerifyActivationHandler(BaseHandler):
             self.finish({"error": "Verify activation failure."})
 
 
-class TempOtaHandler(BaseHandler):
+class TempOtaHandler(TempBaseHandler):
     @gen.coroutine
     @web.authenticated
     def post(self, uid, tid):
-        temp = yield self.db_temp.get_temp(tid)
-        if temp is None:
-            gen_log.error("Not this temp")
-            self.set_status(400)
-            self.finish({"error": "Not this temp"})
-            return
-
-        thing_key = temp['key']
+        if self.req_user and self.req_user['myself'] is False:
+            HTTPError(400, "No operation permission")
+        thing_key = self.temp['key']
         wio = Wio(thing_key)
         try:
             result = yield wio.add_ota()
         except Exception as e:
             gen_log.error(e)
-            self.set_status(400)
-            self.finish({"error": "Trigger OTA is failure."})
-            return
+            raise HTTPError(400, "Trigger OTA is failure.")
 
         ota = yield self.db_temp.update_ota(tid, {"status": result['status'], "status_text": result['status_text']})
         self.set_status(202)
@@ -228,19 +215,22 @@ class TempOtaHandler(BaseHandler):
                 break
 
     @gen.coroutine
+    @web.authenticated
     def get(self, uid, tid):
+        if self.req_user and self.req_user['myself'] is False:
+            HTTPError(400, "No operation permission")
         ota = yield self.db_temp.get_ota(tid)
         if ota is None:
             gen_log.error("Not ota field")
-            self.set_status(400)
-            self.finish({"error", "Can't found ota status."})
+            raise HTTPError(400, "Can't found ota status.")
         self.finish(jsonify(ota))
 
 
-class TempTemperaturesHandler(BaseHandler):
+class TempTemperaturesHandler(TempBaseHandler):
     @gen.coroutine
-    @web.authenticated
     def get(self, uid, tid):
+        if self.temp['private'] is True:
+            raise HTTPError(400, "The device is private")
         result = yield self.db_temperature.get_all_temperature_by_tid(tid)
         self.finish({"temperatures": jsonify(result)})
 

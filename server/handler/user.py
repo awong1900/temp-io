@@ -23,10 +23,10 @@ class UserIdHandler(UserBaseHandler):
     @gen.coroutine
     def get(self, uid):
         if self.user and self.user['myself']:
-            self.req_user.pop('tokens')
-            self.finish(jsonify(self.req_user))
+            self.target_user.pop('tokens')
+            self.finish(jsonify(self.target_user))
         else:
-            self.req_user.pop('tokens')
-            self.req_user.pop('email')
-            self.req_user.pop('sign_in_provider')
-            self.finish(jsonify(self.req_user))
+            self.target_user.pop('tokens')
+            self.target_user.pop('email')
+            self.target_user.pop('sign_in_provider')
+            self.finish(jsonify(self.target_user))
