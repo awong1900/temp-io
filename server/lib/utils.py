@@ -21,7 +21,7 @@ def jsonify(result):
 
 
 def fahrenheit(x):
-    return x * 1.8 + 32
+    return round(x * 1.8 + 32, 1)
 
 
 def get_base_dir():

@@ -60,7 +60,7 @@ class TempHandler(UserBaseHandler):
             thing = yield wio.add_thing()
         except Exception as e:
             gen_log.error(e)
-            raise HTTPError(400, "Create temp-io is failure on built-in Wio server, {}".format(e.message))
+            raise HTTPError(400, "Create temp-io is failure on built-in Wio server, {}".format(str(e)))
         cur_time = datetime.utcnow()
         document = {
             "uid": uid,
@@ -102,7 +102,7 @@ class TempIdHandler(TempBaseHandler):
                 thing_list = yield wio.get_all_thing()
             except Exception as e:
                 gen_log.error(e)
-                raise HTTPError(400, "Get thing is failure from built-in Wio server, {}".format(e.message))
+                raise HTTPError(400, "Get thing is failure from built-in Wio server, {}".format(str(e)))
 
             for thing in thing_list:
                 if thing["id"] == data["id"]:
@@ -166,7 +166,7 @@ class TempVerifyActivationHandler(TempBaseHandler):
             activated = yield wio.get_activation(tid)
         except Exception as e:
             gen_log.error(e)
-            raise HTTPError(400, "Get activation is failure on built-in Wio server, {}".format(e.message))
+            raise HTTPError(400, "Get activation is failure on built-in Wio server, {}".format(str(e)))
         if activated is True:
             yield self.db_temp.update_temp(tid, {"activated": activated})
             self.set_status(204)

@@ -9,10 +9,7 @@ from utils import get_base_dir
 
 
 class Wio(WioAPI):
-    """docstring for Wio.
-
-    Async http access from wio server.
-    """
+    """Async http access from wio server."""
     def __init__(self, access_token=None):
         super(Wio, self).__init__(access_token)
 
@@ -105,3 +102,30 @@ class Wio(WioAPI):
                 else:
                     raise gen.Return(False)
         raise Exception("Not this thing on wio server")
+
+    @gen.coroutine
+    def get_temp(self, board_type_id):
+        path = os.path.abspath(get_base_dir() + "/board.json")
+        with open(path, 'r') as f:
+            board_json = json.load(f)
+            board = board_json[board_type_id-1]
+        try:
+            result = yield self.api(board['temp_api'], method="GET")
+            temp = result['celsius_degree']
+        except Exception as e:
+            gen_log.error(e)
+            raise
+
+        raise gen.Return(temp)
+
+    @gen.coroutine
+    def sleep(self, seconds, board_type_id):
+        path = os.path.abspath(get_base_dir() + "/board.json")
+        with open(path, 'r') as f:
+            board_json = json.load(f)
+            board = board_json[board_type_id-1]
+        try:
+            yield self.api('{}/{}'.format(board['sleep_api'], seconds), method="POST")
+        except Exception as e:
+            gen_log.error(e)
+            raise

@@ -1,24 +1,18 @@
 #!/usr/bin/env python
 # coding=utf-8
 import time
-import urllib
 from datetime import datetime
-import json
 from tornado import gen
 from tornado.log import gen_log
 from tornado.ioloop import IOLoop
-from tornado.httpclient import AsyncHTTPClient
 from db import Temp
 from db import Temperature
+from lib.wio import Wio
 from utils import fahrenheit
-import config
 
 
 class TempTask(object):
-    """Regularly read temperature data through the WIO IOT server
-    """
-    TEMP_URL = "{}/v1/node/GroveTempHumD0/temperature".format(config.wio['base_url'])
-    SLEEP_URL = "{}/v1/node/pm/sleep".format(config.wio['base_url'])
+    """Regularly read temperature data through the WIO IOT server"""
     tasks = set()
 
     def is_in_tasks(self, temp_id):
@@ -59,7 +53,6 @@ class TempTask(object):
     @gen.coroutine
     def task(self, *args):
         temp_id = args[0]
-        http_client = AsyncHTTPClient()
         gen_log.info("=== Do task id({})====".format(temp_id))
 
         doc = yield Temp().get_temp(temp_id)
@@ -72,6 +65,7 @@ class TempTask(object):
         period = doc.get('read_period')
         temp_open = doc.get('open')
         has_sleep = doc.get('has_sleep')
+        board_type_id = doc.get('board_type_id')
 
         if not temp_open:
             gen_log.info("Temp({}) be closed!".format(temp_id))
@@ -82,15 +76,15 @@ class TempTask(object):
         while True:
             try:
                 temps = []
+                wio = Wio(access_token)
                 for i in range(4):
-                    res = yield http_client.fetch(
-                        "{}?access_token={}".format(self.TEMP_URL, access_token),
-                        request_timeout=10)
-                    temps.append(json.loads(res.body)['celsius_degree'])
-                    yield gen.sleep(2)
+                    result = yield wio.get_temp(board_type_id)
+                    temps.append(result)
+                    yield gen.sleep(1)
 
                 temp = round(sum(temps[1:])/(len(temps)-1), 1)
             except Exception as e:
+                # TODO, if not pulgin grove temp, will gen error
                 if time.time() > end_time:
                     gen_log.error("Temp({}) {}".format(temp_id, e))
                     yield self.remove_from_tasks(temp_id, "error", "The node is not wake up on three period.")
@@ -105,11 +99,9 @@ class TempTask(object):
             break
 
         if has_sleep is True:
+            wio = Wio(access_token)
             try:
-                yield http_client.fetch(
-                    "{}/{}?access_token={}".format(self.SLEEP_URL, period-10, access_token),
-                    method='POST',
-                    body=urllib.urlencode({}))
+                yield wio.sleep(period, board_type_id)
                 self.update_status(temp_id, "normal", "The node is sleep mode.")
             except Exception as e:
                 gen_log.error(e)

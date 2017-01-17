@@ -2,7 +2,9 @@
   {
     "id": 1,
     "description": "WioLink + Grove-Temperature&Humidity",
-    "link": "",
+    "picture": "",
+    "temp_api": "/v1/node/GroveTempHumD0/temperature",
+    "sleep_api": "/v1/node/pm/sleep",
     "config": {
       "board_name": "Wio Link v1.0",
       "connections": [
@@ -16,7 +18,9 @@
   {
     "id": 2,
     "description": "WioLink + Grove-Temperature&Humidity Pro",
-    "link": "",
+    "picture": "",
+    "temp_api": "/v1/node/GroveTempHumProD0/temperature",
+    "sleep_api": "/v1/node/pm/sleep",
     "config": {
       "board_name": "Wio Link v1.0",
       "connections": [
@@ -30,7 +34,9 @@
   {
     "id": 3,
     "description": "WioNode + Grove-Temperature&Humidity",
-    "link": "",
+    "picture": "",
+    "temp_api": "/v1/node/GroveTempHumD0/temperature",
+    "sleep_api": "/v1/node/pm/sleep",
     "config": {
       "board_name": "Wio Node v1.0",
       "connections": [
@@ -44,7 +50,9 @@
   {
     "id": 4,
     "description": "WioNode + Grove-Temperature&Humidity pro",
-    "link": "",
+    "picture": "",
+    "temp_api": "/v1/node/GroveTempHumProD0/temperature",
+    "sleep_api": "/v1/node/pm/sleep",
     "config": {
       "board_name": "Wio Node v1.0",
       "connections": [
