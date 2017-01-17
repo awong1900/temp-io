@@ -112,12 +112,13 @@ class TempIdHandler(TempBaseHandler):
             if self.temp['private'] is True:
                 raise HTTPError(400, "The device is private")
             data = jsonify(self.temp)
-            value = {}
+            # value = {}
             # TODO, filter output value
-            for key in ['temperature', 'temperature_f', 'temperature_updated_at', 'updated_at', 'created_at']:
-                value[key] = data[key]
-            self.finish(value)
-        
+            # for key in ['temperature', 'temperature_f', 'temperature_updated_at', 'updated_at', 'created_at']:
+            #     value[key] = data[key]
+            # self.finish(value)
+            self.finish(data)
+
     @gen.coroutine
     @web.authenticated
     def patch(self, uid, tid):
