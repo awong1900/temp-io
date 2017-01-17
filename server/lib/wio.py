@@ -1,18 +1,21 @@
 #!/usr/bin/env python
 # coding=utf-8
+import json
+import os
 from tornado import gen
 from tornado.log import gen_log
 from lib.wioapi import WioAPI
+from utils import get_base_dir
 
 
 class Wio(WioAPI):
     """docstring for Wio.
-    
+
     Async http access from wio server.
     """
     def __init__(self, access_token=None):
         super(Wio, self).__init__(access_token)
-    
+
     @gen.coroutine
     def add_thing(self, body=None):
         body = body or {"name": "anonymous"}
@@ -52,17 +55,13 @@ class Wio(WioAPI):
             raise
 
     @gen.coroutine
-    def add_ota(self):
+    def add_ota(self, board_type_id):
+        path = os.path.abspath(get_base_dir() + "/board.json")
+        with open(path, 'r') as f:
+            board_json = json.load(f)
+            board = board_json[board_type_id-1]
         try:
-            body = {
-                "board_name": "Wio Link v1.0",  # TODO, different board do different json
-                "connections": [
-                    {
-                        "port": "D0",
-                        "sku": "101020019-ffff"
-                    }
-                ]
-            }
+            body = board['config']
             result = yield self.api('/v1/ota/trigger', body=body, method="POST",
                                     headers={"Content-Type": "application/json"})
         except Exception as e:

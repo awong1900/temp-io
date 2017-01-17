@@ -3,6 +3,7 @@
 import json
 from datetime import datetime
 from bson.objectid import ObjectId
+import os
 
 
 class JSONEncoder(json.JSONEncoder):
@@ -22,3 +23,7 @@ def jsonify(result):
 def fahrenheit(x):
     return x * 1.8 + 32
 
+
+def get_base_dir():
+    path = os.path.dirname(os.path.realpath(__file__))
+    return os.path.abspath(path + "/..")

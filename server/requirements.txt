@@ -1,3 +1,5 @@
+bson
+simplejson
 cryptography==1.6
 motor==1.0
 tornado==4.4.2

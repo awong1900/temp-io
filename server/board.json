@@ -22,7 +22,7 @@
       "connections": [
         {
           "port": "D0",
-          "sku": "101020019-ffff"
+          "sku": "101020019"
         }
       ]
     }
@@ -50,7 +50,7 @@
       "connections": [
         {
           "port": "D0",
-          "sku": "101020019-ffff"
+          "sku": "101020019"
         }
       ]
     }

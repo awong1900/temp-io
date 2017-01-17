@@ -13,6 +13,7 @@ from handler import TempVerifyActivationHandler
 from handler import TempTemperaturesHandler
 from handler import TempOtaHandler
 from handler import TempsHandler
+from handler import BoardsHandler
 import db
 from lib.temp_task import TempTask
 
@@ -42,6 +43,7 @@ def make_app():
         (r"/v1/me/*", UserHandler),
         (r"/v1/users/(.+)/*", UserIdHandler),
         (r"/v1/temps", TempsHandler),
+        (r"/v1/boards", BoardsHandler),
     ], **setting)
 
 if __name__ == "__main__":

@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 # coding=utf-8
+import os
+import json
 from datetime import datetime
 from tornado.ioloop import IOLoop
 from tornado import httpclient
@@ -13,6 +15,7 @@ from base import UserBaseHandler
 from base import TempBaseHandler
 from lib.wio import Wio
 from lib.utils import jsonify
+from lib.utils import get_base_dir
 
 
 class TempHandler(UserBaseHandler):
@@ -51,20 +54,20 @@ class TempHandler(UserBaseHandler):
     def post(self, uid):
         """create a temp-io device on server"""
         if self.req_user and self.req_user['myself'] is False:
-            HTTPError(400, "No operation permission")
+            raise HTTPError(400, "No operation permission")
         wio = Wio(self.req_token)
         try:
             thing = yield wio.add_thing()
         except Exception as e:
             gen_log.error(e)
-            HTTPError(400, "Create temp-io is failure on built-in Wio server, {}".format(e.message))
+            raise HTTPError(400, "Create temp-io is failure on built-in Wio server, {}".format(e.message))
         cur_time = datetime.utcnow()
         document = {
             "uid": uid,
             "id": thing['id'],
             "key": thing['key'],
             # "online": False,
-            "board_type": 1,
+            "board_type_id": 1,
             "temperature": None,
             "temperature_f": None,
             "temperature_updated_at": None,
@@ -119,7 +122,7 @@ class TempIdHandler(TempBaseHandler):
     @web.authenticated
     def patch(self, uid, tid):
         if self.req_user and self.req_user['myself'] is False:
-            HTTPError(400, "No operation permission")
+            raise HTTPError(400, "No operation permission")
         data = json_decode(self.request.body)
         temp = yield self.db_temp.get_temp(tid)
         # TODO: limit input field
@@ -138,7 +141,7 @@ class TempIdHandler(TempBaseHandler):
     @web.authenticated
     def delete(self, uid, tid):
         if self.req_user and self.req_user['myself'] is False:
-            HTTPError(400, "No operation permission")
+            raise HTTPError(400, "No operation permission")
         yield self.db_temp.del_temp(tid)
         wio = Wio(self.req_token)
         try:
@@ -157,7 +160,7 @@ class TempVerifyActivationHandler(TempBaseHandler):
     @web.authenticated
     def post(self, uid, tid):
         if self.req_user and self.req_user['myself'] is False:
-            HTTPError(400, "No operation permission")
+            raise HTTPError(400, "No operation permission")
         wio = Wio(self.req_token)
         try:
             activated = yield wio.get_activation(tid)
@@ -178,14 +181,14 @@ class TempOtaHandler(TempBaseHandler):
     @web.authenticated
     def post(self, uid, tid):
         if self.req_user and self.req_user['myself'] is False:
-            HTTPError(400, "No operation permission")
+            raise HTTPError(400, "No operation permission")
         thing_key = self.temp['key']
         wio = Wio(thing_key)
         try:
-            result = yield wio.add_ota()
+            result = yield wio.add_ota(self.temp['board_type_id'])
         except Exception as e:
             gen_log.error(e)
-            raise HTTPError(400, "Trigger OTA is failure.")
+            raise HTTPError(400, "Trigger OTA is failure, {}".format(str(e)))
 
         ota = yield self.db_temp.update_ota(tid, {"status": result['status'], "status_text": result['status_text']})
         self.set_status(202)
@@ -218,7 +221,7 @@ class TempOtaHandler(TempBaseHandler):
     @web.authenticated
     def get(self, uid, tid):
         if self.req_user and self.req_user['myself'] is False:
-            HTTPError(400, "No operation permission")
+            raise HTTPError(400, "No operation permission")
         ota = yield self.db_temp.get_ota(tid)
         if ota is None:
             gen_log.error("Not ota field")
@@ -242,3 +245,13 @@ class TempsHandler(BaseHandler):
         docs = yield self.db_temp.get_all_public_temp()
         temp_list = [jsonify(doc) for doc in docs]
         self.finish({"temps": temp_list})
+
+
+class BoardsHandler(BaseHandler):
+    @gen.coroutine
+    def get(self):
+        path = os.path.abspath(get_base_dir() + "/board.json")
+        with open(path) as f:
+            boards = json.load(f)
+
+        self.finish({"boards": boards})

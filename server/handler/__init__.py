@@ -9,3 +9,5 @@ from temp import TempsHandler
 from temp import TempTemperaturesHandler
 from temp import TempVerifyActivationHandler
 from temp import TempOtaHandler
+from temp import BoardsHandler
+

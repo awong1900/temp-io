@@ -113,9 +113,12 @@ class UserBaseHandler(BaseHandler):
         if self.req_user:
             self.req_user['myself'] = True if uid == self.req_user['id'] else False
 
-        self.target_user = yield self.db_user.get_user_by_uid(uid)
-        if self.target_user is None:
-            raise HTTPError(404, "User not found!")
+        if self.req_user and self.req_user['myself'] is True:
+            self.target_user = self.req_user
+        else:
+            self.target_user = yield self.db_user.get_user_by_uid(uid)
+            if self.target_user is None:
+                raise HTTPError(404, "User not found!")
 
 
 class TempBaseHandler(UserBaseHandler):
