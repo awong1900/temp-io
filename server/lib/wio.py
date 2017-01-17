@@ -110,7 +110,7 @@ class Wio(WioAPI):
             board_json = json.load(f)
             board = board_json[board_type_id-1]
         try:
-            result = yield self.api(board['temp_api'], method="GET")
+            result = yield self.api(board['temp_api'], method="GET", request_timeout=5)
             temp = result['celsius_degree']
         except Exception as e:
             gen_log.error(e)

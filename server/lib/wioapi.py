@@ -52,7 +52,7 @@ class WioAPI(object):
         raise gen.Return(data)
 
     @gen.coroutine
-    def _make_request(self, path, query=None, method="GET", body=None, headers=None):
+    def _make_request(self, path, query=None, method="GET", body=None, headers=None, **kwargs):
         """
         Makes request on `path` in the graph.
 
@@ -87,7 +87,7 @@ class WioAPI(object):
         gen_log.info("body=====> {}".format(body))
 
         client = AsyncHTTPClient()
-        request = HTTPRequest(url, method=method, body=body, headers=headers)
+        request = HTTPRequest(url, method=method, body=body, headers=headers, **kwargs)
         try:
             response = yield client.fetch(request)
         except HTTPError as e:
