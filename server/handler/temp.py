@@ -148,9 +148,7 @@ class TempIdHandler(TempBaseHandler):
             yield wio.del_thing(tid)
         except Exception as e:
             gen_log.error(e)
-            self.set_status(400)
-            self.finish({"error": "del_thing error"})
-            return
+            raise HTTPError(400, "del_thing error, {}".format(str(e)))
         self.set_status(204)
         self.finish()
 

@@ -56,7 +56,7 @@ class BaseHandler(CorsMixin, RequestHandler):
                 data = yield sso.auth_token(token)
                 doc_user = {
                     'id': data['user_id'],
-                    'name': data['ext']['name'],
+                    'name': data['ext'].get('name', ''),
                     'sign_in_provider': data['ext']['firebase']['sign_in_provider'],
                     'email': '' or data['ext'].get('email'),
                     'picture': '' or data['ext'].get('picture'),
